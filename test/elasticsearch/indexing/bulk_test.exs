@@ -87,4 +87,11 @@ defmodule Elasticsearch.Index.BulkTest do
                "\"_routing\":\"123\""
     end
   end
+
+  describe ".encode!/4" do
+    test "delete does not produce source on the next line" do
+      assert Bulk.encode!(Cluster, %Comment{id: "my-id", post_id: "123"}, "my-index", "delete") ==
+               "{\"delete\":{\"_routing\":\"123\",\"_index\":\"my-index\",\"_id\":\"my-id\"}}"
+    end
+  end
 end
