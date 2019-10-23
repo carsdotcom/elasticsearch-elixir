@@ -57,7 +57,7 @@ defmodule Elasticsearch.Index.Bulk do
     config = Cluster.Config.get(cluster)
     header = header(config, "delete", index, struct)
 
-    "#{header}"
+    "#{header}\n"
   end
 
   def encode!(cluster, struct, index, action) do
@@ -106,22 +106,33 @@ defmodule Elasticsearch.Index.Bulk do
       )
       when is_atom(store) do
     config = Cluster.Config.get(cluster)
-    bulk_page_size = index_config[:bulk_page_size] || 5000
-    bulk_wait_interval = index_config[:bulk_wait_interval] || 0
     action = index_config[:bulk_action] || "create"
+    opts =
+      index_config
+      |> Map.take([:bulk_page_size, :bulk_wait_interval])
+      |> Map.to_list()
 
-    errors =
-      store.transaction(fn ->
-        source
-        |> store.stream()
-        |> Stream.map(&encode!(config, &1, index_name, action))
-        |> Stream.chunk_every(bulk_page_size)
-        |> Stream.intersperse(bulk_wait_interval)
-        |> Stream.map(&put_bulk_page(config, index_name, &1))
-        |> Enum.reduce(errors, &collect_errors(&1, &2, action))
-      end)
+    errors = transact(store, source, config, index_name, action, errors, opts)
 
     upload(config, index_name, %{index_config | sources: tail}, errors)
+  end
+
+  @doc """
+  Provides results from transaction of bulk operation
+  """
+  @spec transact(Elasticsearch.Store.t(), term, term, String.t(), String.t(), list, keyword) :: any
+  def transact(store, source, config, index_name, action, errors, opts \\ []) do
+    bulk_page_size = Keyword.get(opts, :bulk_page_size, 5000)
+    bulk_wait_interval = Keyword.get(opts, :bulk_wait_interval, 0)
+    store.transaction(fn ->
+      source
+      |> store.stream()
+      |> Stream.map(&encode!(config, &1, index_name, action))
+      |> Stream.chunk_every(bulk_page_size)
+      |> Stream.intersperse(bulk_wait_interval)
+      |> Stream.map(&put_bulk_page(config, index_name, &1))
+      |> Enum.reduce(errors, &collect_errors(&1, &2, action))
+    end)
   end
 
   defp put_bulk_page(_config, _index_name, wait_interval) when is_integer(wait_interval) do

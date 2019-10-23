@@ -43,10 +43,10 @@ defmodule Elasticsearch.Index.BulkTest do
                ])
     end
 
-    test "collects errors properly" do
+    test "wraps errors in tuple" do
       populate_posts_table(1)
 
-      assert {:error, [%Elasticsearch.Exception{type: "type", message: "reason"}]} =
+      assert {:error, _} =
                Cluster
                |> Elasticsearch.Cluster.Config.get()
                |> Map.put(:api, ErrorAPI)
@@ -78,6 +78,20 @@ defmodule Elasticsearch.Index.BulkTest do
         end)
 
       assert output =~ "Pausing 0ms between bulk pages"
+    end
+  end
+
+  describe ".transact/7" do
+    test "collects errors properly" do
+      populate_posts_table(1)
+
+      config =
+      Cluster
+      |> Elasticsearch.Cluster.Config.get()
+      |> Map.put(:api, ErrorAPI)
+
+      assert [%Elasticsearch.Exception{type: "type", message: "reason"}] =
+        Bulk.transact(Store, Post, config, :posts, "create", [])
     end
   end
 
