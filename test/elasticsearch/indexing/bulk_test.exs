@@ -43,10 +43,10 @@ defmodule Elasticsearch.Index.BulkTest do
                ])
     end
 
-    test "collects errors properly" do
+    test "wraps errors in tuple" do
       populate_posts_table(1)
 
-      assert {:error, [%Elasticsearch.Exception{type: "type", message: "reason"}]} =
+      assert {:error, _} =
                Cluster
                |> Elasticsearch.Cluster.Config.get()
                |> Map.put(:api, ErrorAPI)
@@ -81,10 +81,31 @@ defmodule Elasticsearch.Index.BulkTest do
     end
   end
 
+  describe ".transact/7" do
+    test "collects errors properly" do
+      populate_posts_table(1)
+
+      config =
+      Cluster
+      |> Elasticsearch.Cluster.Config.get()
+      |> Map.put(:api, ErrorAPI)
+
+      assert [%Elasticsearch.Exception{type: "type", message: "reason"}] =
+        Bulk.transact(Store, Post, config, :posts, "create", [])
+    end
+  end
+
   describe ".encode!/3" do
     test "respects _routing meta-field" do
       assert Bulk.encode!(Cluster, %Comment{id: "my-id", post_id: "123"}, "my-index") =~
                "\"_routing\":\"123\""
+    end
+  end
+
+  describe ".encode!/4" do
+    test "delete does not produce source on the next line" do
+      assert Bulk.encode!(Cluster, %Comment{id: "my-id", post_id: "123"}, "my-index", "delete") ==
+               "{\"delete\":{\"_routing\":\"123\",\"_index\":\"my-index\",\"_id\":\"my-id\"}}"
     end
   end
 end

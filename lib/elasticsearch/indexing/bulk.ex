@@ -27,11 +27,11 @@ defmodule Elasticsearch.Index.Bulk do
         %Protocol.UndefinedError{description: "",
         protocol: Elasticsearch.Document, value: 123}}
   """
-  @spec encode(Cluster.t(), struct, String.t()) ::
+  @spec encode(Cluster.t(), struct, String.t(), String.t()) ::
           {:ok, String.t()}
           | {:error, Error.t()}
-  def encode(cluster, struct, index) do
-    {:ok, encode!(cluster, struct, index)}
+  def encode(cluster, struct, index, action \\ "create") do
+    {:ok, encode!(cluster, struct, index, action)}
   rescue
     exception ->
       {:error, exception}
@@ -51,9 +51,18 @@ defmodule Elasticsearch.Index.Bulk do
       iex> Bulk.encode!(Cluster, 123, "my-index")
       ** (Protocol.UndefinedError) protocol Elasticsearch.Document not implemented for 123. This protocol is implemented for: Comment, Post
   """
-  def encode!(cluster, struct, index) do
+  def encode!(cluster, struct, index, action \\ "create")
+
+  def encode!(cluster, struct, index, "delete") do
     config = Cluster.Config.get(cluster)
-    header = header(config, "create", index, struct)
+    header = header(config, "delete", index, struct)
+
+    "#{header}\n"
+  end
+
+  def encode!(cluster, struct, index, action) do
+    config = Cluster.Config.get(cluster)
+    header = header(config, action, index, struct)
 
     document =
       struct
@@ -97,21 +106,33 @@ defmodule Elasticsearch.Index.Bulk do
       )
       when is_atom(store) do
     config = Cluster.Config.get(cluster)
-    bulk_page_size = index_config[:bulk_page_size] || 5000
-    bulk_wait_interval = index_config[:bulk_wait_interval] || 0
+    action = index_config[:bulk_action] || "create"
+    opts =
+      index_config
+      |> Map.take([:bulk_page_size, :bulk_wait_interval])
+      |> Map.to_list()
 
-    errors =
-      store.transaction(fn ->
-        source
-        |> store.stream()
-        |> Stream.map(&encode!(config, &1, index_name))
-        |> Stream.chunk_every(bulk_page_size)
-        |> Stream.intersperse(bulk_wait_interval)
-        |> Stream.map(&put_bulk_page(config, index_name, &1))
-        |> Enum.reduce(errors, &collect_errors/2)
-      end)
+    errors = transact(store, source, config, index_name, action, errors, opts)
 
     upload(config, index_name, %{index_config | sources: tail}, errors)
+  end
+
+  @doc """
+  Provides results from transaction of bulk operation
+  """
+  @spec transact(Elasticsearch.Store.t(), term, term, String.t(), String.t(), list, keyword) :: any
+  def transact(store, source, config, index_name, action, errors, opts \\ []) do
+    bulk_page_size = Keyword.get(opts, :bulk_page_size, 5000)
+    bulk_wait_interval = Keyword.get(opts, :bulk_wait_interval, 0)
+    store.transaction(fn ->
+      source
+      |> store.stream()
+      |> Stream.map(&encode!(config, &1, index_name, action))
+      |> Stream.chunk_every(bulk_page_size)
+      |> Stream.intersperse(bulk_wait_interval)
+      |> Stream.map(&put_bulk_page(config, index_name, &1))
+      |> Enum.reduce(errors, &collect_errors(&1, &2, action))
+    end)
   end
 
   defp put_bulk_page(_config, _index_name, wait_interval) when is_integer(wait_interval) do
@@ -123,21 +144,21 @@ defmodule Elasticsearch.Index.Bulk do
     Elasticsearch.put(config, "/#{index_name}/_doc/_bulk", Enum.join(items))
   end
 
-  defp collect_errors({:ok, %{"errors" => true} = response}, errors) do
+  defp collect_errors({:ok, %{"errors" => true} = response}, errors, action) do
     new_errors =
       response["items"]
-      |> Enum.filter(&(&1["create"]["error"] != nil))
-      |> Enum.map(& &1["create"])
+      |> Enum.filter(&(&1[action]["error"] != nil))
+      |> Enum.map(& &1[action])
       |> Enum.map(&Elasticsearch.Exception.exception(response: &1))
 
     new_errors ++ errors
   end
 
-  defp collect_errors({:error, error}, errors) do
+  defp collect_errors({:error, error}, errors, _action) do
     [error | errors]
   end
 
-  defp collect_errors(_response, errors) do
+  defp collect_errors(_response, errors, _action) do
     errors
   end
 end
