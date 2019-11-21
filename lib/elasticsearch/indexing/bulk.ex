@@ -92,25 +92,28 @@ defmodule Elasticsearch.Index.Bulk do
   Uploads all the data from the list of `sources` to the given index.
   Data for each `source` will be fetched using the configured `:store`.
   """
-  @spec upload(Cluster.t(), index_name :: String.t(), Elasticsearch.Store.t(), list) ::
+  @spec upload(Cluster.t(), index_name :: String.t(), Elasticsearch.Store.t(), list, keyword) ::
           :ok | {:error, [map]}
-  def upload(cluster, index_name, index_config, errors \\ [])
-  def upload(_cluster, _index_name, %{sources: []}, []), do: :ok
-  def upload(_cluster, _index_name, %{sources: []}, errors), do: {:error, errors}
+  def upload(cluster, index_name, index_config, errors \\ [], opts \\ [])
+  def upload(_cluster, _index_name, %{sources: []}, [], _opts), do: :ok
+  def upload(_cluster, _index_name, %{sources: []}, errors, _opts), do: {:error, errors}
 
   def upload(
         cluster,
         index_name,
         %{store: store, sources: [source | tail]} = index_config,
-        errors
+        errors,
+        opts
       )
       when is_atom(store) do
     config = Cluster.Config.get(cluster)
     action = index_config[:bulk_action] || "create"
+
     opts =
       index_config
       |> Map.take([:bulk_page_size, :bulk_wait_interval])
       |> Map.to_list()
+      |> Keyword.merge(opts)
 
     errors = transact(store, source, config, index_name, action, errors, opts)
 
@@ -120,28 +123,31 @@ defmodule Elasticsearch.Index.Bulk do
   @doc """
   Provides results from transaction of bulk operation
   """
-  @spec transact(Elasticsearch.Store.t(), term, term, String.t(), String.t(), list, keyword) :: any
+  @spec transact(Elasticsearch.Store.t(), term, term, String.t(), String.t(), list, keyword) ::
+          any
   def transact(store, source, config, index_name, action, errors, opts \\ []) do
     bulk_page_size = Keyword.get(opts, :bulk_page_size, 5000)
     bulk_wait_interval = Keyword.get(opts, :bulk_wait_interval, 0)
+    http_opts = Keyword.get(opts, :http, [])
+
     store.transaction(fn ->
       source
       |> store.stream()
       |> Stream.map(&encode!(config, &1, index_name, action))
       |> Stream.chunk_every(bulk_page_size)
       |> Stream.intersperse(bulk_wait_interval)
-      |> Stream.map(&put_bulk_page(config, index_name, &1))
+      |> Stream.map(&put_bulk_page(config, index_name, &1, http_opts))
       |> Enum.reduce(errors, &collect_errors(&1, &2, action))
     end)
   end
 
-  defp put_bulk_page(_config, _index_name, wait_interval) when is_integer(wait_interval) do
+  defp put_bulk_page(_config, _index_name, wait_interval, _opts) when is_integer(wait_interval) do
     Logger.debug("Pausing #{wait_interval}ms between bulk pages")
     :timer.sleep(wait_interval)
   end
 
-  defp put_bulk_page(config, index_name, items) when is_list(items) do
-    Elasticsearch.put(config, "/#{index_name}/_doc/_bulk", Enum.join(items))
+  defp put_bulk_page(config, index_name, items, opts) when is_list(items) do
+    Elasticsearch.put(config, "/#{index_name}/_doc/_bulk", Enum.join(items), opts)
   end
 
   defp collect_errors({:ok, %{"errors" => true} = response}, errors, action) do

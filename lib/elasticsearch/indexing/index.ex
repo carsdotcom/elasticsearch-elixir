@@ -227,11 +227,11 @@ defmodule Elasticsearch.Index do
       iex> Index.create(Cluster, "posts-1", "{}")
       :ok
   """
-  @spec create(Cluster.t(), String.t(), map | String.t()) ::
+  @spec create(Cluster.t(), String.t(), map | String.t(), keyword) ::
           :ok
           | {:error, Elasticsearch.Exception.t()}
-  def create(cluster, name, settings) do
-    with {:ok, _response} <- Elasticsearch.put(cluster, "/#{name}", settings), do: :ok
+  def create(cluster, name, settings, opts \\ []) do
+    with {:ok, _response} <- Elasticsearch.put(cluster, "/#{name}", settings, opts), do: :ok
   end
 
   @doc """
@@ -263,13 +263,15 @@ defmodule Elasticsearch.Index do
         }
       }
   """
-  @spec create_from_file(Cluster.t(), String.t(), Path.t()) ::
+  @spec create_from_file(Cluster.t(), String.t(), Path.t(), keyword) ::
           :ok
           | {:error, File.posix()}
           | {:error, Elasticsearch.Exception.t()}
-  def create_from_file(cluster, name, file) do
+  def create_from_file(cluster, name, file, opts \\ []) do
+    http_opts = Keyword.get(opts, :http, [])
+
     with {:ok, settings} <- File.read(file) do
-      create(cluster, name, settings)
+      create(cluster, name, settings, http_opts)
     end
   end
 
@@ -284,18 +286,20 @@ defmodule Elasticsearch.Index do
       iex> Index.create_from_settings(Cluster, "posts-1", "nonexistent.json")
       {:error, :enoent}
   """
-  @spec create_from_settings(Cluster.t(), String.t(), map | Path.t()) ::
+  @spec create_from_settings(Cluster.t(), String.t(), map | Path.t(), keyword) ::
           :ok
           | {:error, File.posix()}
           | {:error, Elasticsearch.Exception.t()}
-  def create_from_settings(cluster, name, settings)
+  def create_from_settings(cluster, name, settings, opts \\ [])
 
-  def create_from_settings(cluster, name, settings) when is_map(settings) do
-    create(cluster, name, settings)
+  def create_from_settings(cluster, name, settings, opts) when is_map(settings) do
+    http_opts = Keyword.get(opts, :http, [])
+    create(cluster, name, settings, http_opts)
   end
 
-  def create_from_settings(cluster, name, file) do
-    create_from_file(cluster, name, file)
+  def create_from_settings(cluster, name, file, opts) do
+    http_opts = Keyword.get(opts, :http, [])
+    create_from_file(cluster, name, file, http_opts)
   end
 
   @doc """
