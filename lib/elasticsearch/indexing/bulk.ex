@@ -127,13 +127,24 @@ defmodule Elasticsearch.Index.Bulk do
     new_errors =
       response["items"]
       |> Enum.filter(&(&1["create"]["error"] != nil))
-      |> Enum.map(& &1["create"])
-      |> Enum.map(&Elasticsearch.Exception.exception(response: &1))
+      |> Enum.map(fn msg ->
+        response = msg["create"]
+        exception = Elasticsearch.Exception.exception(response: response)
+        :error |> Exception.format_banner(exception) |> Logger.warn()
+        exception
+      end)
 
     new_errors ++ errors
   end
 
   defp collect_errors({:error, error}, errors) do
+    if Exception.exception?(error) do
+      Exception.format_banner(:error, error)
+    else
+      inspect(error)
+    end
+    |> Logger.error()
+
     [error | errors]
   end
 

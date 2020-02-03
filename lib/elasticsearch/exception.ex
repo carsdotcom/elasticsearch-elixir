@@ -75,7 +75,7 @@ defmodule Elasticsearch.Exception do
       status: nil,
       line: nil,
       col: nil,
-      message: error["message"],
+      message: error["message"] || error["Message"],
       type: nil,
       query: query,
       raw: error
