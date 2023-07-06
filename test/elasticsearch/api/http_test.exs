@@ -28,6 +28,22 @@ defmodule Elasticsearch.API.HTTPTest do
                )
     end
 
+    test "accepts a Req adapter" do
+      adapter = fn request ->
+        response = %Req.Response{status: 200, body: "Super Adapter"}
+        {request, response}
+      end
+
+      {:ok, resp} = HTTP.request(
+        %{},
+        :get,
+        "http://#{System.get_env("ELASTICSEARCH_HOST", "localhost")}:9200/_cat/health",
+        "",
+        [adapter: adapter])
+
+      assert resp.body == "Super Adapter"
+    end
+
     # See https://github.com/danielberkompas/elasticsearch-elixir/issues/81
     @tag :regression
     test "handles timeouts" do
@@ -42,3 +58,4 @@ defmodule Elasticsearch.API.HTTPTest do
     end
   end
 end
+
