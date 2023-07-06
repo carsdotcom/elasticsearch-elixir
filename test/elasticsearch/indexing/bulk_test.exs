@@ -84,13 +84,14 @@ defmodule Elasticsearch.Index.BulkTest do
       @behaviour Elasticsearch.API
 
       @impl true
-      def request(_config, _method, _url, _data,  [params: %{refresh: "wait"}]) do
-        {:ok, %Req.Response{
-          status: 200,
-          body: %{
-            "status" => "DONE did it"
-          }
-        }}
+      def request(_config, _method, _url, _data, params: %{refresh: "wait"}) do
+        {:ok,
+         %Req.Response{
+           status: 200,
+           body: %{
+             "status" => "DONE did it"
+           }
+         }}
       end
 
       def request(_config, _method, _url, _data, _opts) do
@@ -101,10 +102,15 @@ defmodule Elasticsearch.Index.BulkTest do
     test "will pass HTTP opts through to the request via index_config" do
       populate_posts_table(2)
 
-      assert :ok = Cluster
-      |> Elasticsearch.Cluster.Config.get()
-      |> Map.put(:api, ElasticsearchMock)
-      |> Bulk.upload(:posts, %{store: Store, sources: [Post], http: [params: %{refresh: "wait"}]})
+      assert :ok =
+               Cluster
+               |> Elasticsearch.Cluster.Config.get()
+               |> Map.put(:api, ElasticsearchMock)
+               |> Bulk.upload(:posts, %{
+                 store: Store,
+                 sources: [Post],
+                 http: [params: %{refresh: "wait"}]
+               })
     end
 
     test "HTTP opts in index_config can set adapter" do
@@ -117,17 +123,35 @@ defmodule Elasticsearch.Index.BulkTest do
             "status" => "bad"
           }
         }
+
         {request, response}
       end
 
       output =
         capture_log([level: :warning], fn ->
-          assert {:error, [%Elasticsearch.Exception{status: nil, line: nil, col: nil, message: nil, type: nil, query: nil, raw: %{"status" => "bad"}}]} = Cluster
-          |> Elasticsearch.Cluster.Config.get()
-          |> Bulk.upload(:posts, %{store: Store, sources: [Post], http: [adapter: adapter, params: %{refresh: "wait"}]})
+          assert {:error,
+                  [
+                    %Elasticsearch.Exception{
+                      status: nil,
+                      line: nil,
+                      col: nil,
+                      message: nil,
+                      type: nil,
+                      query: nil,
+                      raw: %{"status" => "bad"}
+                    }
+                  ]} =
+                   Cluster
+                   |> Elasticsearch.Cluster.Config.get()
+                   |> Bulk.upload(:posts, %{
+                     store: Store,
+                     sources: [Post],
+                     http: [adapter: adapter, params: %{refresh: "wait"}]
+                   })
         end)
 
       assert output =~ "[warning] CarReq request failed module: Elasticsearch.API.HTTP"
+
       adapter = fn request ->
         response = %Req.Response{
           status: 200,
@@ -135,12 +159,19 @@ defmodule Elasticsearch.Index.BulkTest do
             "status" => "ok"
           }
         }
+
         {request, response}
       end
 
-      assert :ok = Cluster
-      |> Elasticsearch.Cluster.Config.get()
-      |> Bulk.upload(:posts, %{store: Store, sources: [Post], http: [adapter: adapter, params: %{refresh: "wait"}]})    end
+      assert :ok =
+               Cluster
+               |> Elasticsearch.Cluster.Config.get()
+               |> Bulk.upload(:posts, %{
+                 store: Store,
+                 sources: [Post],
+                 http: [adapter: adapter, params: %{refresh: "wait"}]
+               })
+    end
   end
 
   describe ".encode!/3" do

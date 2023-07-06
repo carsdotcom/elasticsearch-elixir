@@ -116,7 +116,8 @@ defmodule Elasticsearch.Index.Bulk do
     upload(config, index_name, %{index_config | sources: tail}, errors)
   end
 
-  defp put_bulk_page(_config, _index_name, wait_interval, _request_opts) when is_integer(wait_interval) do
+  defp put_bulk_page(_config, _index_name, wait_interval, _request_opts)
+       when is_integer(wait_interval) do
     Logger.debug("Pausing #{wait_interval}ms between bulk pages")
     :timer.sleep(wait_interval)
   end

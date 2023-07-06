@@ -34,12 +34,14 @@ defmodule Elasticsearch.API.HTTPTest do
         {request, response}
       end
 
-      {:ok, resp} = HTTP.request(
-        %{},
-        :get,
-        "http://#{System.get_env("ELASTICSEARCH_HOST", "localhost")}:9200/_cat/health",
-        "",
-        [adapter: adapter])
+      {:ok, resp} =
+        HTTP.request(
+          %{},
+          :get,
+          "http://#{System.get_env("ELASTICSEARCH_HOST", "localhost")}:9200/_cat/health",
+          "",
+          adapter: adapter
+        )
 
       assert resp.body == "Super Adapter"
     end
@@ -58,4 +60,3 @@ defmodule Elasticsearch.API.HTTPTest do
     end
   end
 end
-
