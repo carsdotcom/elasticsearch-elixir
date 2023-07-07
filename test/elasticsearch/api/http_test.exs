@@ -46,6 +46,30 @@ defmodule Elasticsearch.API.HTTPTest do
       assert resp.body == "Super Adapter"
     end
 
+    test "accepts Req options" do
+      {:error, error} =
+        HTTP.request(
+          %{},
+          :get,
+          "http://#{System.get_env("ELASTICSEARCH_HOST", "localhost")}:9200/_cat/health",
+          "",
+          pool_timeout: 0
+        )
+
+        assert error == :pool_timeout
+
+      {:error, error} =
+        HTTP.request(
+          %{},
+          :get,
+          "http://#{System.get_env("ELASTICSEARCH_HOST", "localhost")}:9200/_cat/health",
+          "",
+          receive_timeout: 0
+        )
+
+        assert error == %Mint.TransportError{reason: :timeout}
+    end
+
     # See https://github.com/danielberkompas/elasticsearch-elixir/issues/81
     @tag :regression
     test "handles timeouts" do
