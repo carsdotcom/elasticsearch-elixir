@@ -219,7 +219,7 @@ defmodule Mix.Tasks.Elasticsearch.BuildTest do
     test "only keeps two index versions" do
       for _ <- 1..3 do
         rerun("elasticsearch.build", ["posts"] ++ @cluster_opts)
-        :timer.sleep(1000)
+        :timer.sleep(2000)
       end
 
       {:ok, indexes} = Index.starting_with(TestCluster, "posts")
