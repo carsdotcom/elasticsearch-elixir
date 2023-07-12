@@ -56,7 +56,7 @@ defmodule Elasticsearch.API.HTTPTest do
           pool_timeout: 0
         )
 
-        assert error == :pool_timeout
+      assert error == :pool_timeout
 
       {:error, error} =
         HTTP.request(
@@ -67,7 +67,7 @@ defmodule Elasticsearch.API.HTTPTest do
           receive_timeout: 0
         )
 
-        assert error == %Mint.TransportError{reason: :timeout}
+      assert error == %Mint.TransportError{reason: :timeout}
     end
 
     # See https://github.com/danielberkompas/elasticsearch-elixir/issues/81
