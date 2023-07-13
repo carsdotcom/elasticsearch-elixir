@@ -507,8 +507,7 @@ defmodule Elasticsearch do
     end)
   end
 
-  defp format({:ok, %{status: code, body: body}})
-       when code >= 200 and code < 300 do
+  defp format({:ok, %{status: code, body: body}}) when code in 200..299 do
     {:ok, body}
   end
 
