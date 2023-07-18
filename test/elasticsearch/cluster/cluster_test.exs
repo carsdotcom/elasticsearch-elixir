@@ -52,20 +52,38 @@ defmodule Elasticsearch.ClusterTest do
     end
   end
 
-  describe "configuration" do
+  describe "__config__/0" do
     test "accepts Mix configuration" do
       assert {:ok, _pid} = MixConfiguredCluster.start_link()
-      assert MixConfiguredCluster.__config__() == valid_config()
+
+      assert MixConfiguredCluster.__config__() ==
+               Map.put(valid_config(), :http_supervisor_options,
+                 name: MixConfiguredCluster.FinchSupervisor
+               )
     end
 
+    # this feels like a way around the config building, which is important and which happens in
+    # __MODULE__.start_link/1.
+    # if you do this in your module, then there's a non-zero amount of configuring that 'you' will
+    # be responsible for and which you have to get right.
     test "accepts init configuration" do
       assert {:ok, _pid} = InitConfiguredCluster.start_link()
+      # init config bypasses the start_link callback; I guess that's right??
       assert InitConfiguredCluster.__config__() == valid_config()
     end
 
     test "accepts configuration on startup" do
       assert {:ok, _pid} = Cluster.start_link(valid_config())
-      assert Cluster.__config__() == valid_config()
+
+      assert Cluster.__config__() ==
+               Map.put(valid_config(), :http_supervisor_options, name: Cluster.FinchSupervisor)
+    end
+
+    test "saves the Finch name" do
+      assert {:ok, _pid} = Cluster.start_link(valid_config())
+      saved_config = Cluster.__config__()
+
+      assert Keyword.get(saved_config.http_supervisor_options, :name) == Cluster.FinchSupervisor
     end
   end
 
@@ -131,7 +149,7 @@ defmodule Elasticsearch.ClusterTest do
   end
 
   describe "start_finch/1" do
-    # these teste are really testing Finch internrls and that could make them brittle.
+    # these teste are really testing Finch internals and that could make them brittle.
     # I still think they're valuable to ensure that we are setting the config that we
     # believe we are. That said if (when) they break, don't spend too much time fixing them.
     test "has default config" do

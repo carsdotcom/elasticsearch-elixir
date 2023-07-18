@@ -4,8 +4,86 @@ defmodule Elasticsearch.Cluster.ConfigTest do
   alias Elasticsearch.Cluster.Config
 
   describe ".build/2" do
+    setup do
+      on_exit(fn ->
+        Application.delete_env(:otp_app, Test.Module)
+      end)
+    end
     test "handles nil as first argument" do
       assert %{key: "value"} = Config.build(nil, %{key: "value"})
+    end
+
+    test "set a default Finch supervisor name" do
+      config = Config.build(:otp_app, Test.Module, %{key: "value"})
+      assert Keyword.get(config.http_supervisor_options, :name) == Test.Module.FinchSupervisor
+    end
+
+    test "persists all http adapter config" do
+      config =
+        Config.build(:otp_app, Test.Module, %{
+          http_supervisor_options: [
+            name: My.Test.SupervisorFinch,
+            pools: %{
+              "http://localhost:1234/path/gets/ignored?true" => [
+                size: 99,
+                protocol: :http2,
+                count: 3
+              ],
+              :default => [size: 300]
+            }
+          ]
+        })
+
+      assert Keyword.get(config.http_supervisor_options, :name) == My.Test.SupervisorFinch
+
+      assert config.http_supervisor_options
+             |> Keyword.get(:pools)
+             |> Map.get("http://localhost:1234/path/gets/ignored?true") ==
+               [size: 99, protocol: :http2, count: 3]
+    end
+
+    test "http_supervisor_options are merged function config overrides app env config" do
+      Application.put_env(:otp_app, Test.Module, %{
+        http_supervisor_options: [
+          name: This.ConfigName.Loses,
+          pools: %{
+            "http://localhost:1234/path/gets/ignored?true" => [
+              size: 999,
+              protocol: :http1,
+              count: 333
+            ],
+            :default => [size: 300]
+          }
+        ]
+      })
+
+      config =
+        Config.build(:otp_app, Test.Module, %{
+          http_supervisor_options: [
+            name: My.WinnerName.SupervisorFinch,
+          ]
+        })
+
+      assert Keyword.get(config.http_supervisor_options, :name) == My.WinnerName.SupervisorFinch
+
+      assert config.http_supervisor_options
+             |> Keyword.get(:pools)
+             |> Map.get("http://localhost:1234/path/gets/ignored?true") ==
+               [size: 999, protocol: :http1, count: 333]
+    end
+
+    test "adds the default name if omitted" do
+      config =
+        Config.build(:otp_app, Test.Module, %{
+          http_supervisor_options: [
+            pools: %{
+              :default => [size: 300]
+            }
+          ]
+        })
+
+      assert Keyword.get(config.http_supervisor_options, :pools) == %{:default => [size: 300]}
+      assert Keyword.get(config.http_supervisor_options, :name) == Test.Module.FinchSupervisor
     end
   end
 
@@ -168,8 +246,6 @@ defmodule Elasticsearch.Cluster.ConfigTest do
 
       assert {:error, %{url: [{"must be valid", [validation: :by]}]}} =
                Config.validate(%{url: "NOTtp://localhost:9200", api: Elasticsearch})
-
-      # assert message == "invalid value for :url option: invalid URL format"
     end
   end
 end
