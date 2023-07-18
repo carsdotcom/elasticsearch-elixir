@@ -122,6 +122,66 @@ defmodule Elasticsearch.ClusterTest do
       assert {:ok, pid} = Cluster.start_link(valid_config())
       assert is_pid(pid)
     end
+
+    test "starts a Finch supervisor with a default name" do
+      assert {:ok, _pid} = Cluster.start_link(valid_config())
+      pid = Process.whereis(Cluster.FinchSupervisor)
+      assert is_pid(pid)
+    end
+  end
+
+  describe "start_finch/1" do
+    # these teste are really testing Finch internrls and that could make them brittle.
+    # I still think they're valuable to ensure that we are setting the config that we
+    # believe we are. That said if (when) they break, don't spend too much time fixing them.
+    test "has default config" do
+      assert {:ok, _pid} = Cluster.start_link(valid_config())
+      config = Cluster.__config__()
+      assert {:ok, pid} = Cluster.start_finch(config)
+      state = :sys.get_state(pid)
+      config = elem(state, 11)
+
+      supervisor_pid = Process.whereis(Cluster.FinchSupervisor)
+      assert is_pid(supervisor_pid)
+
+      assert config
+             |> Map.get(:default_pool_config)
+             |> Map.get(:size) == 50
+    end
+
+    test "uses config to start the Finch" do
+      adapter_config = [
+        name: Cluster.CustomFinch,
+        pools: %{
+          "http://localhost:1234/path/gets/ignored?true" => [size: 99, protocol: :http2, count: 3],
+          :default => [size: 300]
+        }
+      ]
+
+      config = Map.put(valid_config(), :http_supervisor_options, adapter_config)
+      assert {:ok, _pid} = Cluster.start_link(config)
+
+      assert {:ok, pid} = Cluster.start_finch(config)
+      state = :sys.get_state(pid)
+      config = elem(state, 11)
+
+      custom_pid = Process.whereis(Cluster.CustomFinch)
+      assert is_pid(custom_pid)
+
+      config
+      |> Map.get(:pools)
+      # the url is decomposed into a three-tuple: :scheme, :host, :port
+      |> Map.get({:http, "localhost", 1234})
+      |> then(fn pool_config ->
+        assert Map.get(pool_config, :count) == 3
+        assert Map.get(pool_config, :size) == 99
+        assert Map.get(pool_config, :protocol) == :http2
+      end)
+
+      assert config
+             |> Map.get(:default_pool_config)
+             |> Map.get(:size) == 300
+    end
   end
 
   defp errors_on(config) do

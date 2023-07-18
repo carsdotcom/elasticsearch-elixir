@@ -157,7 +157,8 @@ defmodule Elasticsearch.Cluster do
         config = Config.build(unquote(opts[:otp_app]), __MODULE__, config)
 
         # Ensure that the configuration is validated on startup
-        with {:ok, pid} <- GenServer.start_link(__MODULE__, config, name: __MODULE__),
+        with {:ok, _pid} = start_finch(config),
+             {:ok, pid} <- GenServer.start_link(__MODULE__, config, name: __MODULE__),
              :ok <- GenServer.call(pid, :validate) do
           # Ensure that the configuration is saved
           GenServer.call(pid, :save_config, 10_000)
@@ -198,6 +199,22 @@ defmodule Elasticsearch.Cluster do
       def handle_call(:save_config, _from, config) do
         Elasticsearch.Cluster.save_config(@table_name, config)
         {:reply, :ok, config}
+      end
+
+      def start_finch(config) do
+        http_supervisor_options = Map.get(config, :http_supervisor_options, [])
+
+        http_supervisor_options =
+          Keyword.update(http_supervisor_options, :name, __MODULE__.FinchSupervisor, fn
+            nil -> __MODULE__
+            name -> name
+          end)
+
+        case Finch.start_link(http_supervisor_options) do
+          {:error, {:already_started, pid}} -> {:ok, pid}
+          {:ok, pid} -> {:ok, pid}
+          error -> error
+        end
       end
 
       defoverridable init: 1
