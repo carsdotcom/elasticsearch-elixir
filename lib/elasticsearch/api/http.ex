@@ -8,6 +8,12 @@ defmodule Elasticsearch.API.HTTP do
 
   @impl true
   def request(config, method, url, data, opts) do
+    merged_opts =
+      config
+      |> Map.get(:default_options, [])
+      |> Keyword.delete(:aws)
+      |> Keyword.merge(opts)
+
     [
       base_url: Map.get(config, :url),
       method: method,
@@ -16,7 +22,7 @@ defmodule Elasticsearch.API.HTTP do
     ]
     |> Keyword.merge(process_request_body(data))
     |> Keyword.merge(auth_credentials(config))
-    |> Keyword.merge(opts)
+    |> Keyword.merge(merged_opts)
     |> request()
   end
 

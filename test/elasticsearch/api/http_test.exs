@@ -1,6 +1,7 @@
 defmodule Elasticsearch.API.HTTPTest do
   use ExUnit.Case
 
+  alias Elasticsearch.Cluster.Config
   alias Elasticsearch.API.HTTP
 
   describe ".request/5" do
@@ -68,6 +69,48 @@ defmodule Elasticsearch.API.HTTPTest do
         )
 
       assert error == %Mint.TransportError{reason: :timeout}
+    end
+
+    test "merges default_options from config into request" do
+      config = Config.get(Elasticsearch.Test.Cluster)
+      default_options = Map.get(config, :default_options)
+
+      opts = Keyword.put(default_options, :receive_timeout, 0)
+      config = Map.put(config, :default_options, opts)
+
+      assert {:error, %Mint.TransportError{reason: :timeout}} ==
+               HTTP.request(
+                 config,
+                 :get,
+                 "http://#{System.get_env("ELASTICSEARCH_HOST", "localhost")}:9200/_cat/health",
+                 "",
+                 []
+               )
+
+      opts = Keyword.put(default_options, :pool_timeout, 0)
+      config = Map.put(config, :default_options, opts)
+
+      assert {:error, :pool_timeout} ==
+               HTTP.request(
+                 config,
+                 :get,
+                 "http://#{System.get_env("ELASTICSEARCH_HOST", "localhost")}:9200/_cat/health",
+                 "",
+                 []
+               )
+
+      opts = Keyword.put(default_options, :timeout, 0)
+      config = Map.put(config, :default_options, opts)
+
+      assert {:error,
+              "%ArgumentError{message: \"unknown option :timeout. Did you mean :pool_timeout?\"}"} =
+               HTTP.request(
+                 config,
+                 :get,
+                 "http://#{System.get_env("ELASTICSEARCH_HOST", "localhost")}:9200/_cat/health",
+                 "",
+                 []
+               )
     end
 
     # See https://github.com/danielberkompas/elasticsearch-elixir/issues/81
