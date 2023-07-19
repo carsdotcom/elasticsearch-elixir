@@ -73,6 +73,30 @@ defmodule Elasticsearch.Cluster.ConfigTest do
                [size: 999, protocol: :http1, count: 333]
     end
 
+    test "when app env has values and config has http_supervisor_options without a name" do
+      Application.put_env(:otp_app, Test.Module, %{
+        http_supervisor_options: [
+          pools: %{
+            "http://localhost:1234/path/gets/ignored?true" => [
+              size: 999,
+              protocol: :http1,
+              count: 333
+            ],
+            :default => [size: 300]
+          }
+        ]
+      })
+
+      config = Config.build(:otp_app, Test.Module, [])
+
+      assert Keyword.get(config.http_supervisor_options, :name) == Test.Module.FinchSupervisor
+
+      assert config.http_supervisor_options
+             |> Keyword.get(:pools)
+             |> Map.get("http://localhost:1234/path/gets/ignored?true") ==
+               [size: 999, protocol: :http1, count: 333]
+    end
+
     test "adds the default name if omitted" do
       config =
         Config.build(:otp_app, Test.Module, %{

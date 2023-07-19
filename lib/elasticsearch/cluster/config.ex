@@ -36,6 +36,13 @@ defmodule Elasticsearch.Cluster.Config do
       _, _v1, v2 ->
         v2
     end)
+    |> Map.update(:http_supervisor_options, [name: default_name], fn
+      nil ->
+        [name: default_name]
+
+      opts ->
+        Keyword.put_new(opts, :name, default_name)
+    end)
   end
 
   @doc false
