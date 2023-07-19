@@ -9,6 +9,7 @@ defmodule Elasticsearch.Cluster.ConfigTest do
         Application.delete_env(:otp_app, Test.Module)
       end)
     end
+
     test "handles nil as first argument" do
       assert %{key: "value"} = Config.build(nil, %{key: "value"})
     end
@@ -60,7 +61,7 @@ defmodule Elasticsearch.Cluster.ConfigTest do
       config =
         Config.build(:otp_app, Test.Module, %{
           http_supervisor_options: [
-            name: My.WinnerName.SupervisorFinch,
+            name: My.WinnerName.SupervisorFinch
           ]
         })
 

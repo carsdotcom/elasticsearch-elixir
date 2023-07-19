@@ -29,8 +29,12 @@ defmodule Elasticsearch.Cluster.Config do
       |> Enum.into(%{})
       |> Map.put_new(:http_supervisor_options, name: default_name)
 
-    Map.merge(from_app, config, fn :http_supervisor_options, v1, v2 ->
-      Keyword.merge(v1, v2)
+    Map.merge(from_app, config, fn
+      :http_supervisor_options, v1, v2 ->
+        Keyword.merge(v1, v2)
+
+      _, _v1, v2 ->
+        v2
     end)
   end
 
