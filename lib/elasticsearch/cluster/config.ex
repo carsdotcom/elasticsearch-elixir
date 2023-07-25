@@ -14,15 +14,35 @@ defmodule Elasticsearch.Cluster.Config do
     Enum.into(config, %{})
   end
 
+  @doc """
+  Merge the argument config onto to app config.
+  Handle the HTTP options as secondary merge (a deep-merge-light, if you will), setting a default
+  Finch Supervisor name.
+  """
   def build(otp_app, module, config) do
     config = Enum.into(config, %{})
+    default_name = Module.concat([module, FinchSupervisor])
 
     from_app =
       otp_app
       |> Application.get_env(module, [])
       |> Enum.into(%{})
+      |> Map.put_new(:http_supervisor_options, name: default_name)
 
-    Map.merge(from_app, config)
+    Map.merge(from_app, config, fn
+      :http_supervisor_options, v1, v2 ->
+        Keyword.merge(v1, v2)
+
+      _, _v1, v2 ->
+        v2
+    end)
+    |> Map.update(:http_supervisor_options, [name: default_name], fn
+      nil ->
+        [name: default_name]
+
+      opts ->
+        Keyword.put_new(opts, :name, default_name)
+    end)
   end
 
   @doc false

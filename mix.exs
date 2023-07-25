@@ -4,9 +4,9 @@ defmodule Elasticsearch.Mixfile do
   def project do
     [
       app: :elasticsearch,
-      description: "Elasticsearch without DSLs",
-      source_url: "https://github.com/danielberkompas/elasticsearch-elixir",
-      version: "1.0.1",
+      description: "Elasticsearch without DSLs. The Cars.com fork of danielberkompas/elasticsearch-elixir",
+      source_url: "https://github.com/carsdotcom/elasticsearch-elixir",
+      version: "7.0.0",
       elixir: "~> 1.5",
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -28,7 +28,7 @@ defmodule Elasticsearch.Mixfile do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :fuse],
       mod: {Elasticsearch.Application, []}
     ]
   end
@@ -46,7 +46,7 @@ defmodule Elasticsearch.Mixfile do
       maintainers: ["Daniel Berkompas"],
       licenses: ["MIT"],
       links: %{
-        "GitHub" => "https://github.com/danielberkompas/elasticsearch-elixir"
+        "GitHub" => "https://github.com/carsdotcom/elasticsearch-elixir"
       }
     ]
   end
@@ -59,7 +59,7 @@ defmodule Elasticsearch.Mixfile do
   defp deps do
     [
       {:poison, ">= 0.0.0", optional: true},
-      {:httpoison, ">= 0.0.0"},
+      {:jason, ">= 0.0.0", optional: true},
       {:telemetry, "~> 0.4.3 or ~> 1.0"},
       {:vex, "~> 0.6"},
       {:sigaws_otp_24, "~> 1.0", optional: true},
@@ -67,7 +67,8 @@ defmodule Elasticsearch.Mixfile do
       {:ex_doc, ">= 0.0.0", only: [:dev, :test]},
       {:ecto, ">= 0.0.0", only: [:dev, :test]},
       {:ecto_sql, ">= 0.0.0", only: [:dev, :test]},
-      {:excoveralls, ">= 0.0.0", only: :test}
+      {:excoveralls, ">= 0.0.0", only: :test},
+      {:car_req, git: "git@github.com:carsdotcom/car_req.git"}
     ]
   end
 

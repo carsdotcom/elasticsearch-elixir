@@ -48,10 +48,23 @@ defmodule Elasticsearch.Index.Bulk do
       {"title":null,"doctype":{"name":"post"},"author":null}
       \"\"\"
 
+      iex> Bulk.encode!(Cluster, %Post{id: "my-id"}, "my-index", "delete")
+      \"\"\"
+      {"delete":{"_index":"my-index","_id":"my-id"}}
+      \"\"\"
+
       iex> Bulk.encode!(Cluster, 123, "my-index")
-      ** (Protocol.UndefinedError) protocol Elasticsearch.Document not implemented for 123 of type Integer
+      ** (Protocol.UndefinedError) protocol Elasticsearch.Document not implemented for 123 of type Integer. This protocol is implemented for the following type(s): Comment, Post
   """
-  def encode!(cluster, struct, index, action \\ "create") do
+  def encode!(cluster, struct, index, action \\ "create")
+
+  def encode!(cluster, struct, index, "delete") do
+    config = Cluster.Config.get(cluster)
+    header = header(config, "delete", index, struct)
+    "#{header}\n"
+  end
+
+  def encode!(cluster, struct, index, action) do
     config = Cluster.Config.get(cluster)
     header = header(config, action, index, struct)
 
@@ -100,6 +113,7 @@ defmodule Elasticsearch.Index.Bulk do
     bulk_page_size = index_config[:bulk_page_size] || 5000
     bulk_wait_interval = index_config[:bulk_wait_interval] || 0
     action = index_config[:bulk_action] || "create"
+    request_params = Map.get(index_config, :http, [])
 
     errors =
       store.transaction(fn ->
@@ -108,20 +122,21 @@ defmodule Elasticsearch.Index.Bulk do
         |> Stream.map(&encode!(config, &1, index_name, action))
         |> Stream.chunk_every(bulk_page_size)
         |> Stream.intersperse(bulk_wait_interval)
-        |> Stream.map(&put_bulk_page(config, index_name, &1))
+        |> Stream.map(&put_bulk_page(config, index_name, &1, request_params))
         |> Enum.reduce(errors, &collect_errors(&1, &2, action))
       end)
 
     upload(config, index_name, %{index_config | sources: tail}, errors)
   end
 
-  defp put_bulk_page(_config, _index_name, wait_interval) when is_integer(wait_interval) do
+  defp put_bulk_page(_config, _index_name, wait_interval, _request_opts)
+       when is_integer(wait_interval) do
     Logger.debug("Pausing #{wait_interval}ms between bulk pages")
     :timer.sleep(wait_interval)
   end
 
-  defp put_bulk_page(config, index_name, items) when is_list(items) do
-    Elasticsearch.put(config, "/#{index_name}/_doc/_bulk", Enum.join(items))
+  defp put_bulk_page(config, index_name, items, request_opts) when is_list(items) do
+    Elasticsearch.put(config, "/#{index_name}/_doc/_bulk", Enum.join(items), request_opts)
   end
 
   defp collect_errors({:ok, %{"errors" => true} = response}, errors, action) do

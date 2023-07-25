@@ -86,7 +86,7 @@ defmodule Elasticsearch.Cluster do
 
   * `:default_headers` (Optional) - A list of default headers to send with the each request.
 
-  * `:default_options` (Optional) - A list of default HTTPoison/Hackney options to send with
+  * `:default_options` (Optional) - A list of default HTTP adapter options to send with
     each request.
 
   ### Configuration Example
@@ -158,7 +158,8 @@ defmodule Elasticsearch.Cluster do
 
         # Ensure that the configuration is validated on startup
         with {:ok, pid} <- GenServer.start_link(__MODULE__, config, name: __MODULE__),
-             :ok <- GenServer.call(pid, :validate) do
+             :ok <- GenServer.call(pid, :validate),
+             {:ok, _pid} = start_finch(config) do
           # Ensure that the configuration is saved
           GenServer.call(pid, :save_config, 10_000)
 
@@ -198,6 +199,17 @@ defmodule Elasticsearch.Cluster do
       def handle_call(:save_config, _from, config) do
         Elasticsearch.Cluster.save_config(@table_name, config)
         {:reply, :ok, config}
+      end
+
+      def start_finch(config) do
+        config
+        |> Map.fetch!(:http_supervisor_options)
+        |> Finch.start_link()
+        |> case do
+          {:error, {:already_started, pid}} -> {:ok, pid}
+          {:ok, pid} -> {:ok, pid}
+          error -> error
+        end
       end
 
       defoverridable init: 1
