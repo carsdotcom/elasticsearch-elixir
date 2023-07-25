@@ -11,6 +11,14 @@ A simple, no-nonsense Elasticsearch library for Elixir. Highlights include:
 - **Dev Tools**. Helpers for running Elasticsearch as part of your supervision
   tree during development.
 
+## The Fork
+
+This package is a fork from the upstream.
+
+It has been modified to use the CarReq HTTP adapter.
+
+CarReq is a cars.com HTTP adapter that has been optimized for cars.com use cases and tooling.
+
 ## Installation
 
 Add `elasticsearch` to your list of dependencies in `mix.exs`:
@@ -18,7 +26,7 @@ Add `elasticsearch` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:elasticsearch, "~> 1.0.0"}
+    {:elasticsearch, git: "git@github.com:carsdotcom/elasticsearch-elixir", tag: "~> 7.0"}
   ]
 end
 ```
