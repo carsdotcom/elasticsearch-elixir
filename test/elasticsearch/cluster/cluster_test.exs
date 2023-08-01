@@ -85,6 +85,32 @@ defmodule Elasticsearch.ClusterTest do
 
       assert Keyword.get(saved_config.http_supervisor_options, :name) == Cluster.FinchSupervisor
     end
+
+    test "set the conn_opts config and receive a connect timeout" do
+      config =
+        Map.put(valid_config(), :http_supervisor_options,
+          name: Cluster.FinchSupervisor,
+          pools: %{
+            :default => [size: 75]
+          },
+          conn_opts: [transport_opts: [timeout: 499]]
+        )
+
+      assert {:ok, _pid} = Cluster.start_link(config)
+      saved_config = Cluster.__config__()
+
+      assert Keyword.get(saved_config.http_supervisor_options, :conn_opts) == [
+               transport_opts: [timeout: 499]
+             ]
+
+      # a connect timeout (i.e. a tls handshake timeout, raises %Mint.TransportError{})
+      adapter = fn request ->
+        {request, %Mint.TransportError{reason: :timeout}}
+      end
+
+      {:error, %Mint.TransportError{reason: :timeout}} =
+        Elasticsearch.get(Cluster, "/_cat/health?format=json", adapter: adapter)
+    end
   end
 
   describe ".start_link/1" do
