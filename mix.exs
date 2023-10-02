@@ -68,7 +68,7 @@ defmodule Elasticsearch.Mixfile do
       {:ecto, ">= 0.0.0", only: [:dev, :test]},
       {:ecto_sql, ">= 0.0.0", only: [:dev, :test]},
       {:excoveralls, ">= 0.0.0", only: :test},
-      {:car_req, git: "git@github.com:carsdotcom/car_req.git"}
+      {:car_req, git: "git@github.com:carsdotcom/car_req.git", ref: "e2fe31cd", overrride: true}
     ]
   end
 
