@@ -103,12 +103,12 @@ defmodule Elasticsearch.ClusterTest do
                transport_opts: [timeout: 499]
              ]
 
-      # a connect timeout (i.e. a tls handshake timeout, raises %Mint.TransportError{})
+      # a connect timeout (i.e. a tls handshake timeout, raises %Req.TransportError{})
       adapter = fn request ->
-        {request, %Mint.TransportError{reason: :timeout}}
+        {request, %Req.TransportError{reason: :timeout}}
       end
 
-      {:error, %Mint.TransportError{reason: :timeout}} =
+      {:error, %Req.TransportError{reason: :timeout}} =
         Elasticsearch.get(Cluster, "/_cat/health?format=json", adapter: adapter)
     end
   end
