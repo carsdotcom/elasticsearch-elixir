@@ -9,7 +9,7 @@ defmodule Elasticsearch.Test.Cluster do
     {:ok,
      %{
        api: Elasticsearch.API.HTTP,
-       json_library: Poison,
+       json_library: Jason,
        url: url,
        username: "username",
        password: "password",

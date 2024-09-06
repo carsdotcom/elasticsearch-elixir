@@ -41,7 +41,7 @@ defmodule Elasticsearch.API.HTTP do
   end
 
   defp auth_credentials(%{username: username, password: password}) do
-    [auth: {username, password}]
+    [auth: {:basic, "#{username}:#{password}"}]
   end
 
   defp auth_credentials(_config) do

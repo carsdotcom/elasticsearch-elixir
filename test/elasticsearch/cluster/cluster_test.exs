@@ -4,7 +4,7 @@ defmodule Elasticsearch.ClusterTest do
   def valid_config do
     %{
       api: Elasticsearch.API.HTTP,
-      json_library: Poison,
+      json_library: Jason,
       url: "http://localhost:9200",
       username: "username",
       password: "password",
@@ -103,12 +103,12 @@ defmodule Elasticsearch.ClusterTest do
                transport_opts: [timeout: 499]
              ]
 
-      # a connect timeout (i.e. a tls handshake timeout, raises %Mint.TransportError{})
+      # a connect timeout (i.e. a tls handshake timeout, raises %Req.TransportError{})
       adapter = fn request ->
-        {request, %Mint.TransportError{reason: :timeout}}
+        {request, %Req.TransportError{reason: :timeout}}
       end
 
-      {:error, %Mint.TransportError{reason: :timeout}} =
+      {:error, %Req.TransportError{reason: :timeout}} =
         Elasticsearch.get(Cluster, "/_cat/health?format=json", adapter: adapter)
     end
   end
@@ -139,7 +139,7 @@ defmodule Elasticsearch.ClusterTest do
 
     test "validates json_library" do
       refute errors_on([])[:json_library]
-      refute errors_on(json_library: Poison)[:json_library]
+      refute errors_on(json_library: Jason)[:json_library]
 
       assert {"must be valid", validation: :by} in errors_on(json_library: Nonexistent.Module).json_library
     end
@@ -197,7 +197,11 @@ defmodule Elasticsearch.ClusterTest do
       adapter_config = [
         name: Cluster.CustomFinch,
         pools: %{
-          "http://localhost:1234/path/gets/ignored?true" => [size: 99, protocol: :http2, count: 3],
+          "http://localhost:1234/path/gets/ignored?true" => [
+            size: 99,
+            protocols: [:http2],
+            count: 3
+          ],
           :default => [size: 300]
         }
       ]
@@ -219,7 +223,8 @@ defmodule Elasticsearch.ClusterTest do
       |> then(fn pool_config ->
         assert Map.get(pool_config, :count) == 3
         assert Map.get(pool_config, :size) == 99
-        assert Map.get(pool_config, :protocol) == :http2
+        conn_opts = Map.get(pool_config, :conn_opts)
+        assert Keyword.get(conn_opts, :protocols) == [:http2]
       end)
 
       assert config
