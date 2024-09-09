@@ -54,7 +54,6 @@ defmodule Elasticsearch do
           "_primary_term" => 1,
           "_seq_no" => 0,
           "_shards" => %{"failed" => 0, "successful" => 1, "total" => 2},
-          "_type" => "_doc",
           "_version" => 1,
           "result" => "created"
         }}
@@ -84,7 +83,6 @@ defmodule Elasticsearch do
       # =>     "_primary_term" => 1,
       # =>     "_seq_no" => 0,
       # =>     "_shards" => %{"failed" => 0, "successful" => 1, "total" => 2},
-      # =>     "_type" => "_doc",
       # =>     "_version" => 1,
       # =>     "result" => "created"
       # =>   }}
@@ -108,7 +106,6 @@ defmodule Elasticsearch do
         "_primary_term" => 1,
         "_seq_no" => 0,
         "_shards" => %{"failed" => 0, "successful" => 1, "total" => 2},
-        "_type" => "_doc",
         "_version" => 1,
         "result" => "created"
       }
@@ -136,7 +133,6 @@ defmodule Elasticsearch do
           "_primary_term" => 1,
           "_seq_no" => 1,
           "_shards" => %{"failed" => 0, "successful" => 1, "total" => 2},
-          "_type" => "_doc",
           "_version" => 2,
           "result" => "deleted"
         }}
@@ -161,7 +157,6 @@ defmodule Elasticsearch do
         "_primary_term" => 1,
         "_seq_no" => 1,
         "_shards" => %{"failed" => 0, "successful" => 1, "total" => 2},
-        "_type" => "_doc",
         "_version" => 2,
         "result" => "deleted"
       }
@@ -287,7 +282,6 @@ defmodule Elasticsearch do
           "_primary_term" => 1,
           "_seq_no" => 0,
           "_shards" => %{"failed" => 0, "successful" => 1, "total" => 2},
-          "_type" => "_doc",
           "_version" => 1,
           "result" => "created"
         }}
@@ -322,7 +316,6 @@ defmodule Elasticsearch do
         "_primary_term" => 1,
         "_seq_no" => 0,
         "_shards" => %{"failed" => 0, "successful" => 1, "total" => 2},
-        "_type" => "_doc",
         "_version" => 1,
         "result" => "created"
       }
