@@ -73,7 +73,7 @@ config :my_app, MyApp.ElasticsearchCluster,
   api: Elasticsearch.API.HTTP,
 
   # Customize the library used for JSON encoding/decoding.
-  json_library: Poison, # or Jason
+  json_library: Jason
 
   # You should configure each index which you maintain in Elasticsearch here.
   # This configuration will be read by the `mix elasticsearch.build` task,
@@ -215,9 +215,9 @@ As AWS does not provide credentials' based http authentication, you can use the 
 To use this, just add `sigaws` to your dependencies and add this to your configuration:
 
 ```elixir
-# Add to deps 
+# Add to deps
 def deps do
-  [          
+  [
     # ...
     {:sigaws, ">= 0.0.0"}
   ]

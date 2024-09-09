@@ -58,17 +58,15 @@ defmodule Elasticsearch.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:poison, ">= 0.0.0", optional: true},
       {:jason, ">= 0.0.0", optional: true},
       {:telemetry, "~> 0.4.3 or ~> 1.0"},
       {:vex, "~> 0.6"},
-      {:sigaws_otp_24, "~> 1.0", optional: true},
       {:postgrex, ">= 0.0.0", only: [:dev, :test]},
       {:ex_doc, ">= 0.0.0", only: [:dev, :test]},
       {:ecto, ">= 0.0.0", only: [:dev, :test]},
       {:ecto_sql, ">= 0.0.0", only: [:dev, :test]},
-      {:car_req, git: "git@github.com:carsdotcom/car_req.git", overrride: true}
-      # {:excoveralls, ">= 0.0.0", only: :test},
+      {:car_req, git: "git@github.com:carsdotcom/car_req.git", override: true, ref: "960eaf6a"},
+      # {:car_req, git: "git@github.com:carsdotcom/car_req.git", overrride: true}
     ]
   end
 
