@@ -139,7 +139,7 @@ defmodule Elasticsearch.ClusterTest do
 
     test "validates json_library" do
       refute errors_on([])[:json_library]
-      refute errors_on(json_library: Poison)[:json_library]
+      refute errors_on(json_library: Jason)[:json_library]
 
       assert {"must be valid", validation: :by} in errors_on(json_library: Nonexistent.Module).json_library
     end
@@ -197,7 +197,11 @@ defmodule Elasticsearch.ClusterTest do
       adapter_config = [
         name: Cluster.CustomFinch,
         pools: %{
-          "http://localhost:1234/path/gets/ignored?true" => [size: 99, protocols: [:http2], count: 3],
+          "http://localhost:1234/path/gets/ignored?true" => [
+            size: 99,
+            protocols: [:http2],
+            count: 3
+          ],
           :default => [size: 300]
         }
       ]
