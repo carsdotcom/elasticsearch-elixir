@@ -12,7 +12,10 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  build0:
+    name: Build and test OpenSearch v1.16 OTP26
+    runs-on: ubuntu-latest
+
     services:
       postgres:
         image: postgres:12
@@ -22,26 +25,10 @@ jobs:
           POSTGRES_PASSWORD: ""
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 10s --health-retries 5
 
-      # opensearch:
-      #   image: opensearchproject/opensearch:2.15.0
-      #   ports: ['9200:9200']
-      #   env:
-      #     OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
-      #     DISABLE_SECURITY_PLUGIN: true
-      #     DISABLE_SECURITY_DASHBOARDS_PLUGIN: true
-      #     DISABLE_INSTALL_DEMO_CONFIG: true
-      #     discovery.type: single-node
-      #     bootstrap.memory_lock: true # along with the memlock settings below, disables swapping
-
-      #   options: --health-cmd "curl --verbose --show-error http://localhost:9200" --health-interval 10s --health-timeout 10s --health-retries 5
-
-    name: Build and test
-    runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Runs OpenSearch
+      - name: Run OpenSearch
         uses: esmarkowski/opensearch-github-action@v1.0.0
         with:
           version: 2.15.0
@@ -64,26 +51,33 @@ jobs:
       - name: Check Formatting
         run: mix format --check-formatted
 
-      - name: Run tests
+      - name: Run tests v1.16 OTP26
         env:
           DATABASE_HOST: localhost
-          # POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
           MIX_ENV: test
         run: mix test
 
-      - name: Set up Elixir v1.16 OTP27
-        uses: erlef/setup-beam@v1
-        with:
-          elixir-version: "1.16.X" # Define the elixir version [required]
-          otp-version: "27.X" # Define the OTP version [required]
-      - name: Install dependencies
-        run: mix deps.get
-      - name: Run tests
+  build1:
+    name: Build and test OpenSearch v1.17 OTP26
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:12
+        ports: ['5432:5432']
         env:
-          DATABASE_HOST: localhost
-          # POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
-          MIX_ENV: test
-        run: mix test
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_PASSWORD: ""
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 10s --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run OpenSearch
+        uses: esmarkowski/opensearch-github-action@v1.0.0
+        with:
+          version: 2.15.0
+          security-disabled: true
 
       - name: Set up Elixir v1.17 OTP26
         uses: erlef/setup-beam@v1
@@ -92,24 +86,76 @@ jobs:
           otp-version: "26.X" # Define the OTP version [required]
       - name: Install dependencies
         run: mix deps.get
-      - name: Run tests
+      - name: Run tests v1.17 OTP26
         env:
           DATABASE_HOST: localhost
-          # POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
           MIX_ENV: test
         run: mix test
 
-      - name: Set up Elixir v1.17 OTP27
+  build2:
+    name: Build and test ElasticSearch v1.16 OTP26
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:12
+        ports: ['5432:5432']
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_PASSWORD: ""
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 10s --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Elasticsearch
+        uses: elastic/elastic-github-actions/elasticsearch@master
+        with:
+          stack-version: 7.17.24
+
+      - name: Set up Elixir v1.16 OTP26
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.16.X" # Define the elixir version [required]
+          otp-version: "26.X" # Define the OTP version [required]
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Run tests v1.17 OTP26
+        env:
+          DATABASE_HOST: localhost
+          MIX_ENV: test
+        run: mix test
+
+  build3:
+    name: Build and test ElasticSearch v1.17 OTP26
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:12
+        ports: ['5432:5432']
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_PASSWORD: ""
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 10s --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Elasticsearch
+        uses: elastic/elastic-github-actions/elasticsearch@master
+        with:
+          stack-version: 7.17.24
+
+      - name: Set up Elixir v1.17 OTP26
         uses: erlef/setup-beam@v1
         with:
           elixir-version: "1.17.X" # Define the elixir version [required]
-          otp-version: "27.X" # Define the OTP version [required]
+          otp-version: "26.X" # Define the OTP version [required]
       - name: Install dependencies
         run: mix deps.get
-      - name: Run tests
+      - name: Run tests v1.17 OTP26
         env:
           DATABASE_HOST: localhost
-          # POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
           MIX_ENV: test
-
         run: mix test
