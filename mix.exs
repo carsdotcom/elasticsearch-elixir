@@ -10,14 +10,6 @@ defmodule Elasticsearch.Mixfile do
       elixir: "~> 1.5",
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
-      test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [
-        coveralls: :test,
-        "coveralls.detail": :test,
-        "coveralls.post": :test,
-        "coveralls.html": :test,
-        "coveralls.semaphore": :test
-      ],
       docs: docs(),
       deps: deps(),
       package: package(),
@@ -67,7 +59,6 @@ defmodule Elasticsearch.Mixfile do
       {:ex_doc, ">= 0.0.0", only: [:dev, :test]},
       {:ecto, ">= 0.0.0", only: [:dev, :test]},
       {:ecto_sql, ">= 0.0.0", only: [:dev, :test]},
-      {:excoveralls, ">= 0.0.0", only: :test},
       {:car_req, git: "git@github.com:carsdotcom/car_req.git", overrride: true}
     ]
   end
