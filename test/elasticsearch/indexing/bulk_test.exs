@@ -33,8 +33,7 @@ defmodule Elasticsearch.Index.BulkTest do
 
   # the doctests are OK, but there is variability in the responses (map sorting, etc) that makes them
   # ❄️ esp on CI/GH Actions.
-  @tag :skip
-  doctest Elasticsearch.Index.Bulk
+  # doctest Elasticsearch.Index.Bulk
 
   describe ".upload/4" do
     # Regression test for https://github.com/danielberkompas/elasticsearch-elixir/issues/10
