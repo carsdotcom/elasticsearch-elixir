@@ -68,7 +68,7 @@ defmodule Elasticsearch.API.HTTPTest do
           receive_timeout: 0
         )
 
-      assert error == %Mint.TransportError{reason: :timeout}
+      assert error == %Req.TransportError{reason: :timeout}
     end
 
     test "merges default_options from config into request" do
@@ -78,7 +78,7 @@ defmodule Elasticsearch.API.HTTPTest do
       opts = Keyword.put(default_options, :receive_timeout, 0)
       config = Map.put(config, :default_options, opts)
 
-      assert {:error, %Mint.TransportError{reason: :timeout}} ==
+      assert {:error, %Req.TransportError{reason: :timeout}} ==
                HTTP.request(
                  config,
                  :get,
@@ -102,8 +102,7 @@ defmodule Elasticsearch.API.HTTPTest do
       opts = Keyword.put(default_options, :timeout, 0)
       config = Map.put(config, :default_options, opts)
 
-      assert {:error,
-              "%ArgumentError{message: \"unknown option :timeout. Did you mean :pool_timeout?\"}"} =
+      assert {:error, message} =
                HTTP.request(
                  config,
                  :get,
@@ -111,6 +110,8 @@ defmodule Elasticsearch.API.HTTPTest do
                  "",
                  []
                )
+
+      assert message =~ "%ArgumentError{message: \"unknown option :timeout"
     end
 
     # See https://github.com/danielberkompas/elasticsearch-elixir/issues/81

@@ -73,7 +73,7 @@ config :my_app, MyApp.ElasticsearchCluster,
   api: Elasticsearch.API.HTTP,
 
   # Customize the library used for JSON encoding/decoding.
-  json_library: Poison, # or Jason
+  json_library: Jason
 
   # You should configure each index which you maintain in Elasticsearch here.
   # This configuration will be read by the `mix elasticsearch.build` task,
@@ -212,16 +212,9 @@ end
 
 As AWS does not provide credentials' based http authentication, you can use the `Elasticsearch.API.AWS` module if you want to use AWS Elasticsearch Service with AWS Signature V4 signed HTTP connections.
 
-To use this, just add `sigaws` to your dependencies and add this to your configuration:
+AWS signatures are now supported in Req directly. See https://github.com/wojtekmach/req?tab=readme-ov-file#features
 
-```elixir
-# Add to deps 
-def deps do
-  [          
-    # ...
-    {:sigaws, ">= 0.0.0"}
-  ]
-end
+(put_aws_sigv4/1)[https://hexdocs.pm/req/Req.Steps.html#put_aws_sigv4/1]
 
 # config/prod.exs
 config :my_app, MyApp.ElasticsearchCluster,
