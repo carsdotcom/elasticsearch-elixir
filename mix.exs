@@ -53,7 +53,6 @@ defmodule Elasticsearch.Mixfile do
       {:jason, ">= 0.0.0", optional: true},
       {:telemetry, "~> 0.4.3 or ~> 1.0"},
       {:vex, "~> 0.6"},
-      # {:car_req, git: "git@github.com:carsdotcom/car_req.git", overrride: true},
       {:car_req, github: "carsdotcom/car_req", overrride: true},
       {:postgrex, ">= 0.0.0", only: [:dev, :test]},
       {:ex_doc, ">= 0.0.0", only: [:dev, :test]},

@@ -216,17 +216,6 @@ AWS signatures are now supported in Req directly. See https://github.com/wojtekm
 
 (put_aws_sigv4/1)[https://hexdocs.pm/req/Req.Steps.html#put_aws_sigv4/1]
 
-~To use this, just add `sigaws` to your dependencies and add this to your configuration:~
-
-```elixir
-# Add to deps
-def deps do
-  [
-    # probably no longer needed. Remove when we verify req supports this natively.
-    # {:sigaws, ">= 0.0.0"}
-  ]
-end
-
 # config/prod.exs
 config :my_app, MyApp.ElasticsearchCluster,
   api: Elasticsearch.API.AWS,
