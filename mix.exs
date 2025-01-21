@@ -4,7 +4,8 @@ defmodule Elasticsearch.Mixfile do
   def project do
     [
       app: :elasticsearch,
-      description: "Elasticsearch without DSLs. The Cars.com fork of danielberkompas/elasticsearch-elixir",
+      description:
+        "Elasticsearch without DSLs. The Cars.com fork of danielberkompas/elasticsearch-elixir",
       source_url: "https://github.com/carsdotcom/elasticsearch-elixir",
       version: "7.0.0",
       elixir: "~> 1.5",
@@ -98,6 +99,12 @@ defmodule Elasticsearch.Mixfile do
         Development: [
           Elasticsearch.Executable
         ]
+      ],
+      skip_undefined_reference_warnings_on: [
+        "guides/upgrading/0.4.x_to_0.5.x.md",
+        "guides/upgrading/0.3.x_to_0.4.x.md",
+        "guides/upgrading/0.2.x_to_0.3.x.md",
+        "guides/upgrading/0.1.x_to_0.2.x.md"
       ]
     ]
   end
