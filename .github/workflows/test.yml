@@ -1,0 +1,85 @@
+name: test
+on: [push]
+jobs:
+  test:
+    name: "Build and test (${{ matrix.search }})"
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - elixir: 1.17.x
+            otp: 27.x
+            search: elasticsearch-8.2.0
+          - elixir: 1.17.x
+            otp: 27.x
+            search: opensearch-2.15.0
+
+    services:
+          postgres:
+            image: "postgres:16"
+            ports:
+              - 5432:5432
+            env:
+              POSTGRES_PASSWORD: postgres
+              options: >-
+                --health-cmd pg_isready
+                --health-interval 10s
+                --health-timeout 5s
+                --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: search
+        run: |
+          version=$(echo ${{ matrix.search }} | cut -d- -f2)
+          service=$(echo ${{ matrix.search }} | cut -d- -f1)
+          echo "::set-output name=version::$version"
+          echo "::set-output name=service::$service"
+
+      - name: Configure sysctl limits
+        run: |
+          sudo swapoff -a
+          sudo sysctl -w vm.swappiness=1
+          sudo sysctl -w fs.file-max=262144
+          sudo sysctl -w vm.max_map_count=262144
+
+      - name: Run Elasticsearch
+        uses: elastic/elastic-github-actions/elasticsearch@master
+        with:
+          stack-version: ${{ steps.search.outputs.version }}
+          security-enabled: false
+        if: ${{ steps.search.outputs.service == 'elasticsearch' }}
+
+      - name: Run OpenSearch
+        uses: ankane/setup-opensearch@v1
+        with:
+          opensearch-version: ${{ steps.search.outputs.version }}
+        if: ${{ steps.search.outputs.service == 'opensearch' }}
+
+      - uses: erlef/setup-beam@v1
+        id: setup-elixir
+        with:
+          otp-version: ${{ matrix.otp }}
+          elixir-version: ${{ matrix.elixir }}
+
+      - name: Retrieve Mix Dependencies Cache
+        uses: actions/cache@v3
+        id: mix-cache
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{ steps.setup-elixir.outputs.otp-version }}-${{ steps.setup-elixir.outputs.elixir-version }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+
+      - name: Install Mix Dependencies
+        if: steps.mix-cache.outputs.cache-hit != 'true'
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+
+      - name: Check Formatting
+        run: mix format --check-formatted
+
+      - name: Run tests
+        run: mix test
