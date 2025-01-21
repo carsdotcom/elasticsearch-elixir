@@ -9,7 +9,7 @@ defmodule Mix.Tasks.Elasticsearch.Build do
   5. Refresh `alias-12323123`.
 
   For a functional version of this approach, see
-  `Elasticsearch.Index.hot_swap/4`.
+  `Elasticsearch.Index.hot_swap/2`.
 
   ## Options
 
