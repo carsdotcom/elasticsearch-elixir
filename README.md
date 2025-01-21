@@ -217,6 +217,8 @@ AWS signatures are now supported in Req directly. See https://github.com/wojtekm
 (put_aws_sigv4/1)[https://hexdocs.pm/req/Req.Steps.html#put_aws_sigv4/1]
 
 # config/prod.exs
+
+```elixir
 config :my_app, MyApp.ElasticsearchCluster,
   api: Elasticsearch.API.AWS,
   default_options: [

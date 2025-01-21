@@ -27,7 +27,7 @@ defmodule Elasticsearch.Cluster.ConfigTest do
             pools: %{
               "http://localhost:1234/path/gets/ignored?true" => [
                 size: 99,
-                protocol: :http2,
+                protocols: [:http2],
                 count: 3
               ],
               :default => [size: 300]
@@ -40,7 +40,7 @@ defmodule Elasticsearch.Cluster.ConfigTest do
       assert config.http_supervisor_options
              |> Keyword.get(:pools)
              |> Map.get("http://localhost:1234/path/gets/ignored?true") ==
-               [size: 99, protocol: :http2, count: 3]
+               [size: 99, protocols: [:http2], count: 3]
     end
 
     test "http_supervisor_options are merged function config overrides app env config" do
@@ -50,7 +50,7 @@ defmodule Elasticsearch.Cluster.ConfigTest do
           pools: %{
             "http://localhost:1234/path/gets/ignored?true" => [
               size: 999,
-              protocol: :http1,
+              protocols: [:http1],
               count: 333
             ],
             :default => [size: 300]
@@ -70,7 +70,7 @@ defmodule Elasticsearch.Cluster.ConfigTest do
       assert config.http_supervisor_options
              |> Keyword.get(:pools)
              |> Map.get("http://localhost:1234/path/gets/ignored?true") ==
-               [size: 999, protocol: :http1, count: 333]
+               [size: 999, protocols: [:http1], count: 333]
     end
 
     test "when app env has values and config has http_supervisor_options without a name" do
@@ -79,7 +79,7 @@ defmodule Elasticsearch.Cluster.ConfigTest do
           pools: %{
             "http://localhost:1234/path/gets/ignored?true" => [
               size: 999,
-              protocol: :http1,
+              protocols: [:http1],
               count: 333
             ],
             :default => [size: 300]
@@ -94,7 +94,7 @@ defmodule Elasticsearch.Cluster.ConfigTest do
       assert config.http_supervisor_options
              |> Keyword.get(:pools)
              |> Map.get("http://localhost:1234/path/gets/ignored?true") ==
-               [size: 999, protocol: :http1, count: 333]
+               [size: 999, protocols: [:http1], count: 333]
     end
 
     test "adds the default name if omitted" do
