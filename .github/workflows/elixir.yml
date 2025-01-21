@@ -15,7 +15,7 @@ env:
 
 jobs:
   test:
-    name: Build and test OpenSearch v1.16 OTP26
+    name: Build and test on OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}} (${{ matrix.search }})
     runs-on: ubuntu-latest
 
     strategy:
@@ -33,7 +33,8 @@ jobs:
         image: postgres:16
         ports: ['5432:5432']
         env:
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_PASSWORD: ""
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
