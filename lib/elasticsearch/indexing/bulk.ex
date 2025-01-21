@@ -96,7 +96,7 @@ defmodule Elasticsearch.Index.Bulk do
   Uploads all the data from the list of `sources` to the given index.
   Data for each `source` will be fetched using the configured `:store`.
   """
-  @spec upload(Cluster.t(), index_name :: String.t(), Elasticsearch.Store.t(), list) ::
+  @spec upload(Cluster.t(), index_name :: String.t(), map(), list) ::
           :ok | {:error, [map]}
   def upload(cluster, index_name, index_config, errors \\ [])
   def upload(_cluster, _index_name, %{sources: []}, []), do: :ok
