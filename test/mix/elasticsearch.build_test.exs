@@ -81,7 +81,7 @@ defmodule Mix.Tasks.Elasticsearch.BuildTest do
 
     def init(config) do
       base = %{
-        json_library: Poison,
+        json_library: Jason,
         url: "http://localhost:9200",
         indexes: %{
           posts: %{

@@ -18,8 +18,8 @@ defmodule Elasticsearch.Index.Bulk do
 
       iex> Bulk.encode(Cluster, %Post{id: "my-id"}, "my-index")
       {:ok, \"\"\"
-      {"create":{"_index":"my-index","_id":"my-id"}}
-      {"title":null,"doctype":{"name":"post"},"author":null}
+      {"create":{"_id":"my-id","_index":"my-index"}}
+      {"title":null,"author":null,"doctype":{"name":"post"}}
       \"\"\"}
 
       iex> Bulk.encode(Cluster, 123, "my-index")
@@ -44,13 +44,13 @@ defmodule Elasticsearch.Index.Bulk do
 
       iex> Bulk.encode!(Cluster, %Post{id: "my-id"}, "my-index")
       \"\"\"
-      {"create":{"_index":"my-index","_id":"my-id"}}
-      {"title":null,"doctype":{"name":"post"},"author":null}
+      {"create":{"_id":"my-id","_index":"my-index"}}
+      {"title":null,"author":null,"doctype":{"name":"post"}}
       \"\"\"
 
       iex> Bulk.encode!(Cluster, %Post{id: "my-id"}, "my-index", "delete")
       \"\"\"
-      {"delete":{"_index":"my-index","_id":"my-id"}}
+      {"delete":{"_id":"my-id","_index":"my-index"}}
       \"\"\"
 
       iex> Bulk.encode!(Cluster, 123, "my-index")

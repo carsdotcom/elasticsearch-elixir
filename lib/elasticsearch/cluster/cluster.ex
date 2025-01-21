@@ -93,7 +93,7 @@ defmodule Elasticsearch.Cluster do
 
       %{
         api: Elasticsearch.API.HTTP,
-        json_library: Poison,
+        json_library: Jason,
         url: "http://localhost:9200",
         username: "username",
         password: "password",
