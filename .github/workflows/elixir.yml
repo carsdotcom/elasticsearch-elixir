@@ -84,12 +84,17 @@ jobs:
           path: deps
           key: ${{ runner.os }}-${{ steps.setup-elixir.outputs.otp-version }}-${{ steps.setup-elixir.outputs.elixir-version }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
 
+      # Step: Install Mix dependencies if the cache was not hit.
       - name: Install Mix Dependencies
         if: steps.mix-cache.outputs.cache-hit != 'true'
         run: |
           mix local.rebar --force
           mix local.hex --force
           mix deps.get
+
+      # Step: Check for unused dependencies.
+      - name: Check for unused dependencies
+        run: mix deps.unlock --check-unused
 
       # Step: Compile the project treating any warnings as errors.
       - name: Compiles without warnings
