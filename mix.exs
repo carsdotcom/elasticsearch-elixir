@@ -109,6 +109,12 @@ defmodule Elasticsearch.Mixfile do
         Development: [
           Elasticsearch.Executable
         ]
+      ],
+      skip_undefined_reference_warnings_on: [
+        "guides/upgrading/0.4.x_to_0.5.x.md",
+        "guides/upgrading/0.3.x_to_0.4.x.md",
+        "guides/upgrading/0.2.x_to_0.3.x.md",
+        "guides/upgrading/0.1.x_to_0.2.x.md"
       ]
     ]
   end
