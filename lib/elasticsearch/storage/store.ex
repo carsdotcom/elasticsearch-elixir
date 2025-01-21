@@ -12,7 +12,7 @@ defmodule Elasticsearch.Store do
         Repo.stream(Post)
       end
   """
-  @callback stream(any) :: Stream.t()
+  @callback stream(any) :: Enumerable.t()
 
   @doc """
   Returns a transaction wrapper to execute the stream returned by `stream/1`
