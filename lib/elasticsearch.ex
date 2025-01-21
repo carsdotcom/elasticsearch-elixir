@@ -54,7 +54,6 @@ defmodule Elasticsearch do
           "_primary_term" => 1,
           "_seq_no" => 0,
           "_shards" => %{"failed" => 0, "successful" => 1, "total" => 2},
-          "_type" => "_doc",
           "_version" => 1,
           "result" => "created"
         }}
@@ -108,7 +107,6 @@ defmodule Elasticsearch do
         "_primary_term" => 1,
         "_seq_no" => 0,
         "_shards" => %{"failed" => 0, "successful" => 1, "total" => 2},
-        "_type" => "_doc",
         "_version" => 1,
         "result" => "created"
       }
@@ -136,7 +134,6 @@ defmodule Elasticsearch do
           "_primary_term" => 1,
           "_seq_no" => 1,
           "_shards" => %{"failed" => 0, "successful" => 1, "total" => 2},
-          "_type" => "_doc",
           "_version" => 2,
           "result" => "deleted"
         }}
@@ -161,7 +158,6 @@ defmodule Elasticsearch do
         "_primary_term" => 1,
         "_seq_no" => 1,
         "_shards" => %{"failed" => 0, "successful" => 1, "total" => 2},
-        "_type" => "_doc",
         "_version" => 2,
         "result" => "deleted"
       }
@@ -287,7 +283,6 @@ defmodule Elasticsearch do
           "_primary_term" => 1,
           "_seq_no" => 0,
           "_shards" => %{"failed" => 0, "successful" => 1, "total" => 2},
-          "_type" => "_doc",
           "_version" => 1,
           "result" => "created"
         }}
@@ -295,7 +290,7 @@ defmodule Elasticsearch do
       iex> Elasticsearch.put(Cluster, "/bad/url", %{"title" => "title", "author" => "author"})
       {:error,
        %Elasticsearch.Exception{col: nil, line: nil,
-        message: "Incorrect HTTP method for uri [/bad/url] and method [PUT], allowed: [POST]",
+        message: "no handler found for uri [/bad/url] and method [PUT]",
         query: nil, raw: nil, status: nil, type: nil}}
   """
   @spec put(Cluster.t(), url, data) :: response
@@ -314,21 +309,20 @@ defmodule Elasticsearch do
 
   ## Examples
 
-      iex> Index.create_from_file(Cluster, "posts", "test/support/settings/posts.json")
-      ...> Elasticsearch.put!(Cluster, "/posts/_doc/id", %{"name" => "name", "author" => "author"})
+      iex> Index.create_from_file(Cluster, "posts-2", "test/support/settings/posts.json")
+      ...> Elasticsearch.put!(Cluster, "/posts-2/_doc/id", %{"name" => "name", "author" => "author"})
       %{
         "_id" => "id",
-        "_index" => "posts",
+        "_index" => "posts-2",
         "_primary_term" => 1,
         "_seq_no" => 0,
         "_shards" => %{"failed" => 0, "successful" => 1, "total" => 2},
-        "_type" => "_doc",
         "_version" => 1,
         "result" => "created"
       }
 
       iex> Elasticsearch.put!(Cluster, "/bad/url", %{"data" => "here"})
-      ** (Elasticsearch.Exception) Incorrect HTTP method for uri [/bad/url] and method [PUT], allowed: [POST]
+      ** (Elasticsearch.Exception) no handler found for uri [/bad/url] and method [PUT]
   """
   @spec put!(Cluster.t(), url, data) :: map | no_return
   @spec put!(Cluster.t(), url, data, opts) :: map | no_return
