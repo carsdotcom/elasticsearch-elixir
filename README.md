@@ -215,9 +215,9 @@ As AWS does not provide credentials' based http authentication, you can use the 
 To use this, just add `sigaws` to your dependencies and add this to your configuration:
 
 ```elixir
-# Add to deps 
+# Add to deps
 def deps do
-  [          
+  [
     # ...
     {:sigaws, ">= 0.0.0"}
   ]
