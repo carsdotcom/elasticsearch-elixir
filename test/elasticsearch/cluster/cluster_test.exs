@@ -197,7 +197,11 @@ defmodule Elasticsearch.ClusterTest do
       adapter_config = [
         name: Cluster.CustomFinch,
         pools: %{
-          "http://localhost:1234/path/gets/ignored?true" => [size: 99, protocol: :http2, count: 3],
+          "http://localhost:1234/path/gets/ignored?true" => [
+            size: 99,
+            protocols: [:http2],
+            count: 3
+          ],
           :default => [size: 300]
         }
       ]
@@ -219,7 +223,7 @@ defmodule Elasticsearch.ClusterTest do
       |> then(fn pool_config ->
         assert Map.get(pool_config, :count) == 3
         assert Map.get(pool_config, :size) == 99
-        assert Map.get(pool_config, :protocol) == :http2
+        assert get_in(pool_config, [:conn_opts, :protocols]) == [:http2]
       end)
 
       assert config
