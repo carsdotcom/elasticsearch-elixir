@@ -1,5 +1,5 @@
 %{
-  "car_req": {:git, "https://github.com/carsdotcom/car_req.git", "8f38058f6269b2abb835a7b9b6fc7fb54c5cb789", [ref: "0.3.2"]},
+  "car_req": {:git, "https://github.com/carsdotcom/car_req.git", "8f38058f6269b2abb835a7b9b6fc7fb54c5cb789", []},
   "db_connection": {:hex, :db_connection, "2.7.0", "b99faa9291bb09892c7da373bb82cba59aefa9b36300f6145c5f201c7adf48ec", [:mix], [{:telemetry, "~> 0.4 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "dcf08f31b2701f857dfc787fbad78223d61a32204f217f15e881dd93e4bdd3ff"},
   "decimal": {:hex, :decimal, "2.3.0", "3ad6255aa77b4a3c4f818171b12d237500e63525c2fd056699967a3e7ea20f62", [:mix], [], "hexpm", "a4d66355cb29cb47c3cf30e71329e58361cfcb37c34235ef3bf1d7bf3773aeac"},
   "earmark_parser": {:hex, :earmark_parser, "1.4.42", "f23d856f41919f17cd06a493923a722d87a2d684f143a1e663c04a2b93100682", [:mix], [], "hexpm", "6915b6ca369b5f7346636a2f41c6a6d78b5af419d61a611079189233358b8b8b"},
