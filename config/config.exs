@@ -5,7 +5,7 @@ import Config
 config :elasticsearch, Elasticsearch.Test.Repo,
   adapter: Ecto.Adapters.Postgres,
   username: "postgres",
-  password: "postgres",
+  password: "",
   database: "elasticsearch_test",
   hostname: System.get_env("DATABASE_HOST", "localhost"),
   pool: Ecto.Adapters.SQL.Sandbox,
