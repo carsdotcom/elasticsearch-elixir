@@ -1,5 +1,5 @@
 defmodule Elasticsearch.ClusterTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   def valid_config do
     %{

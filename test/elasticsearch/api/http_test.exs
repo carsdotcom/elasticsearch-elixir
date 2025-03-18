@@ -1,5 +1,5 @@
 defmodule Elasticsearch.API.HTTPTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Elasticsearch.Cluster.Config
   alias Elasticsearch.API.HTTP
