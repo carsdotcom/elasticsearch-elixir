@@ -5,7 +5,8 @@ defmodule Elasticsearch.Index do
 
   alias Elasticsearch.{
     Cluster.Config,
-    Index.Bulk
+    Index.Bulk,
+    Namespace
   }
 
   @doc """
@@ -144,8 +145,11 @@ defmodule Elasticsearch.Index do
   """
   @spec refresh(Cluster.t(), String.t()) :: :ok | {:error, Elasticsearch.Exception.t()}
   def refresh(cluster, name) do
-    with {:ok, _} <- Elasticsearch.post(cluster, "/#{name}/_forcemerge?max_num_segments=5", %{}),
-         {:ok, _} <- Elasticsearch.post(cluster, "/#{name}/_refresh", %{}),
+    namespaced_index = Namespace.index_with_namespace(name)
+
+    with {:ok, _} <-
+           Elasticsearch.post(cluster, "/#{namespaced_index}/_forcemerge?max_num_segments=5", %{}),
+         {:ok, _} <- Elasticsearch.post(cluster, "/#{namespaced_index}/_refresh", %{}),
          do: :ok
   end
 
@@ -231,7 +235,8 @@ defmodule Elasticsearch.Index do
           :ok
           | {:error, Elasticsearch.Exception.t()}
   def create(cluster, name, settings) do
-    with {:ok, _response} <- Elasticsearch.put(cluster, "/#{name}", settings), do: :ok
+    namespaced_index = Namespace.index_with_namespace(name)
+    with {:ok, _response} <- Elasticsearch.put(cluster, "/#{namespaced_index}", settings), do: :ok
   end
 
   @doc """
