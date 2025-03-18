@@ -5,11 +5,8 @@ defmodule Elasticsearch.Namespace do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
-  def init(_opts) do
-    {:ok, %{}}
-  end
-
-  def set_pid_namespace(pid, namespace) when is_pid(pid) and is_binary(namespace) do
+  def set_pid_namespace(pid) when is_pid(pid) do
+    namespace = pid_to_string(pid)
     GenServer.call(__MODULE__, {:set, pid, namespace})
   end
 
@@ -21,6 +18,16 @@ defmodule Elasticsearch.Namespace do
     GenServer.call(__MODULE__, {:clear, pid})
   end
 
+  def index_with_namespace(index) do
+    [get_pid_namespace(self()), index]
+    |> Enum.reject(&is_nil/1)
+    |> Enum.join("-")
+  end
+
+  @impl true
+  def init(_opts) do
+    {:ok, %{}}
+  end
 
   @impl true
   def handle_call({:set, pid, namespace}, _from, state) do
@@ -43,6 +50,9 @@ defmodule Elasticsearch.Namespace do
     {:noreply, Map.delete(state, pid)}
   end
 
-  defp flatten_namespace([]), do: nil
-  defp flatten_namespace(namespace), do: Enum.join(namespace, "-")
+  defp pid_to_string(pid) do
+    pid
+    |> :erlang.phash2()
+    |> to_string()
+  end
 end
