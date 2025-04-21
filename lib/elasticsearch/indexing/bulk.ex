@@ -5,7 +5,8 @@ defmodule Elasticsearch.Index.Bulk do
 
   alias Elasticsearch.{
     Cluster,
-    Document
+    Document,
+    Namespace
   }
 
   require Logger
