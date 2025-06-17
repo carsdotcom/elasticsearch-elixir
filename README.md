@@ -208,25 +208,22 @@ defmodule MyApp.ElasticsearchMock do
 end
 ```
 
-#### Elasticsearch.API.AWS
+#### IAM Authentication
 
-As AWS does not provide credentials' based http authentication, you can use the `Elasticsearch.API.AWS` module if you want to use AWS Elasticsearch Service with AWS Signature V4 signed HTTP connections.
+This library supports IAM-based authentication when communicating with OpenSearch clusters running in Amazon Managed OpenSearch and OpenSearch Serverless. AWS signatures are supported in Req using the (put_aws_sigv4/1)[https://hexdocs.pm/req/Req.Steps.html#put_aws_sigv4/1] step. See https://github.cxom/wojtekmach/req?tab=readme-ov-file#features
 
-AWS signatures are now supported in Req directly. See https://github.com/wojtekmach/req?tab=readme-ov-file#features
-
-(put_aws_sigv4/1)[https://hexdocs.pm/req/Req.Steps.html#put_aws_sigv4/1]
 
 # config/prod.exs
 
 ```elixir
 config :my_app, MyApp.ElasticsearchCluster,
-  api: Elasticsearch.API.AWS,
+  api: Elasticsearch.API.HTTP,
   default_options: [
-    aws: [
+    aws_sigv4: [
       region: "us-east-1",
       service: "es",
-      access_key: "aws_access_key_id",
-      secret: "aws_secret_access_key"
+      access_key_id: "aws_access_key_id",
+      secret_access_key: "aws_secret_access_key"
     ]
   ]
 ```

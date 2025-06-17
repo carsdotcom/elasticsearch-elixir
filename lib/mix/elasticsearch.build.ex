@@ -54,7 +54,9 @@ defmodule Mix.Tasks.Elasticsearch.Build do
       |> Map.update(:indexes, %{}, fn indexes ->
         indexes
         |> Enum.to_list()
-        |> Enum.map(fn {index, local_settings} -> {index, Map.merge(local_settings, settings)} end)
+        |> Enum.map(fn {index, local_settings} ->
+          {index, Map.merge(local_settings, settings)}
+        end)
         |> Enum.into(%{})
       end)
 
