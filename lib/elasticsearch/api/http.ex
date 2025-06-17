@@ -11,7 +11,6 @@ defmodule Elasticsearch.API.HTTP do
     merged_opts =
       config
       |> Map.get(:default_options, [])
-      |> Keyword.delete(:aws)
       |> Keyword.merge(opts)
 
     [
