@@ -48,8 +48,8 @@ jobs:
         run: |
           version=$(echo ${{ matrix.search }} | cut -d- -f2)
           service=$(echo ${{ matrix.search }} | cut -d- -f1)
-          echo "{version}={$version}" >> $GITHUB_OUTPUT
-          echo "{service}={$service}" >> $GITHUB_OUTPUT
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "service=$service" >> $GITHUB_OUTPUT
 
       - name: Configure sysctl limits
         run: |
