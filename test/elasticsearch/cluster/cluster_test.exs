@@ -16,15 +16,7 @@ defmodule Elasticsearch.ClusterTest do
           bulk_page_size: 5000,
           bulk_wait_interval: 5000
         }
-      },
-      default_options: [
-        aws_sigv4: [
-          region: "us-east-1",
-          service: "es",
-          access_key_id: "aws_access_key_id",
-          secret_access_key: "aws_secret_access_key"
-        ]
-      ]
+      }
     }
   end
 
@@ -113,10 +105,20 @@ defmodule Elasticsearch.ClusterTest do
     end
 
     test "puts AWS signature headers" do
-      assert {:ok, _pid} = Cluster.start_link(valid_config())
+      config =
+        Map.put(valid_config(), :default_options,
+          aws_sigv4: [
+            region: "us-east-1",
+            service: "es",
+            access_key_id: "aws_access_key_id",
+            secret_access_key: "aws_secret_access_key"
+          ]
+        )
+
+      assert {:ok, _pid} = Cluster.start_link(config)
 
       plug = fn conn ->
-        assert ["AWS4-HMAC-SHA256" <> _| _] = Plug.Conn.get_req_header(conn, "authorization")
+        assert ["AWS4-HMAC-SHA256" <> _ | _] = Plug.Conn.get_req_header(conn, "authorization")
         assert [<<_::binary-size(64)>>] = Plug.Conn.get_req_header(conn, "x-amz-content-sha256")
         Plug.Conn.send_resp(conn, 200, "ok")
       end
