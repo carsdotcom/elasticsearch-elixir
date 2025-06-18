@@ -22,14 +22,7 @@ defmodule Elasticsearch.Test.Cluster do
            bulk_wait_interval: 0
          }
        },
-       default_options: [
-         aws: [
-           region: "us-east-1",
-           service: "es",
-           access_key: "aws_access_key_id",
-           secret: "aws_secret_access_key"
-         ]
-       ]
+       default_options: []
      }}
   end
 end

@@ -2,9 +2,9 @@ name: Elixir CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 permissions:
   contents: read
@@ -31,7 +31,7 @@ jobs:
     services:
       postgres:
         image: postgres:16
-        ports: ['5432:5432']
+        ports: ["5432:5432"]
         env:
           POSTGRES_HOST_AUTH_METHOD: trust
           POSTGRES_PASSWORD: ""
@@ -48,8 +48,8 @@ jobs:
         run: |
           version=$(echo ${{ matrix.search }} | cut -d- -f2)
           service=$(echo ${{ matrix.search }} | cut -d- -f1)
-          echo "::set-output name=version::$version"
-          echo "::set-output name=service::$service"
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "service=$service" >> $GITHUB_OUTPUT
 
       - name: Configure sysctl limits
         run: |
