@@ -18,11 +18,11 @@ defmodule Elasticsearch.ClusterTest do
         }
       },
       default_options: [
-        aws: [
+        aws_sigv4: [
           region: "us-east-1",
           service: "es",
-          access_key: "aws_access_key_id",
-          secret: "aws_secret_access_key"
+          access_key_id: "aws_access_key_id",
+          secret_access_key: "aws_secret_access_key"
         ]
       ]
     }
