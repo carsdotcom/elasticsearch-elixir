@@ -58,7 +58,8 @@ defmodule Elasticsearch.Mixfile do
       {:postgrex, ">= 0.0.0", only: [:dev, :test]},
       {:ex_doc, ">= 0.0.0", only: [:dev, :test]},
       {:ecto, ">= 0.0.0", only: [:dev, :test]},
-      {:ecto_sql, ">= 0.0.0", only: [:dev, :test]}
+      {:ecto_sql, ">= 0.0.0", only: [:dev, :test]},
+      {:plug, "~> 1.0", only: [:dev, :test]},
     ]
   end
 

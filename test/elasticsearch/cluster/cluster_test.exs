@@ -111,6 +111,18 @@ defmodule Elasticsearch.ClusterTest do
       {:error, %Req.TransportError{reason: :timeout}} =
         Elasticsearch.get(Cluster, "/_cat/health?format=json", adapter: adapter)
     end
+
+    test "puts AWS signature headers" do
+      assert {:ok, _pid} = Cluster.start_link(valid_config())
+
+      plug = fn conn ->
+        assert ["AWS4-HMAC-SHA256" <> _| _] = Plug.Conn.get_req_header(conn, "authorization")
+        assert [<<_::binary-size(64)>>] = Plug.Conn.get_req_header(conn, "x-amz-content-sha256")
+        Plug.Conn.send_resp(conn, 200, "ok")
+      end
+
+      {:ok, _resp} = Elasticsearch.get(Cluster, "/_cat/health?format=json", plug: plug)
+    end
   end
 
   describe ".start_link/1" do
