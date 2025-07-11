@@ -12,6 +12,7 @@ defmodule Elasticsearch.API.HTTP do
       config
       |> Map.get(:default_options, [])
       |> Keyword.merge(opts)
+      |> Keyword.delete(:aws_sign_from_exaws)
 
     [
       base_url: Map.get(config, :url),
@@ -41,6 +42,22 @@ defmodule Elasticsearch.API.HTTP do
 
   defp auth_credentials(%{username: username, password: password}) do
     [auth: {:basic, "#{username}:#{password}"}]
+  end
+
+  if Code.ensure_loaded?(ExAws) do
+    defp auth_credentials(%{default_options: [aws_sign_from_exaws: true]}) do
+      # Build auth from ExAWS and pass to https://hexdocs.pm/req/Req.Steps.html#put_aws_sigv4/1
+      config =
+        :es
+        |> ExAws.Config.new()
+        |> Map.take([:region, :access_key_id, :secret_access_key, :security_token])
+        |> Map.put(:service, "es")
+        |> Map.to_list()
+
+      [
+        aws_sigv4: config
+      ]
+    end
   end
 
   defp auth_credentials(_config) do

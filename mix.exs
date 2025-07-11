@@ -60,6 +60,7 @@ defmodule Elasticsearch.Mixfile do
       {:ecto, ">= 0.0.0", only: [:dev, :test]},
       {:ecto_sql, ">= 0.0.0", only: [:dev, :test]},
       {:plug, "~> 1.0", only: [:dev, :test]},
+      {:ex_aws, "~> 2.0", optional: true},
     ]
   end
 

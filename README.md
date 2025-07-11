@@ -228,6 +228,22 @@ config :my_app, MyApp.ElasticsearchCluster,
   ]
 ```
 
+If you want to use the AWS SDK for Elixir (Maybe because you don't have AWS credentials and need to use [IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) to assume a role), you will need to install `ex_aws` with:
+
+```elixir
+{:ex_aws, "~> 2.0"}
+```
+
+And then configure Elasticsearch to it:
+
+```elixir
+config :my_app, MyApp.ElasticsearchCluster,
+  api: Elasticsearch.API.HTTP,
+  default_options: [
+    aws_sign_from_exaws: true
+  ]
+```
+
 ## Indexing
 
 #### Bulk
