@@ -45,18 +45,22 @@ defmodule Elasticsearch.API.HTTP do
   end
 
   if Code.ensure_loaded?(ExAws) do
-    defp auth_credentials(%{default_options: [aws_sign_from_exaws: true]}) do
-      # Build auth from ExAWS and pass to https://hexdocs.pm/req/Req.Steps.html#put_aws_sigv4/1
-      config =
-        :es
-        |> ExAws.Config.new()
-        |> Map.take([:region, :access_key_id, :secret_access_key, :security_token])
-        |> Map.put(:service, "es")
-        |> Map.to_list()
+    defp auth_credentials(%{default_options: default_options}) do
+      if Keyword.get(default_options, :aws_sign_from_exaws) do
+        # Build auth from ExAWS and pass to https://hexdocs.pm/req/Req.Steps.html#put_aws_sigv4/1
+        config =
+          :es
+          |> ExAws.Config.new()
+          |> Map.take([:region, :access_key_id, :secret_access_key, :security_token])
+          |> Map.put(:service, "es")
+          |> Map.to_list()
 
-      [
-        aws_sigv4: config
-      ]
+        [
+          aws_sigv4: config
+        ]
+      else
+        []
+      end
     end
   end
 
