@@ -49,14 +49,27 @@ defmodule Elasticsearch.API.HTTP do
       if Keyword.get(default_options, :aws_sign_from_exaws) do
         # Build auth from ExAWS and pass to https://hexdocs.pm/req/Req.Steps.html#put_aws_sigv4/1
         config =
-          :es
-          |> ExAws.Config.new()
-          |> Map.take([:region, :access_key_id, :secret_access_key, :security_token])
-          |> Map.put(:service, "es")
-          |> Map.to_list()
+          Map.take(ExAws.Config.new(:es), [
+            :region,
+            :access_key_id,
+            :secret_access_key,
+            :security_token
+          ])
+
+        aws_sigv4 = [
+          service: "es",
+          region: config[:region],
+          access_key_id: config[:access_key_id],
+          secret_access_key: config[:secret_access_key]
+        ]
+
+        aws_sigv4 =
+          if config[:security_token],
+            do: aws_sigv4 ++ [token: config[:security_token]],
+            else: aws_sigv4
 
         [
-          aws_sigv4: config
+          aws_sigv4: aws_sigv4
         ]
       else
         []
