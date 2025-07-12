@@ -48,25 +48,20 @@ defmodule Elasticsearch.API.HTTP do
     defp auth_credentials(%{default_options: default_options}) do
       if Keyword.get(default_options, :aws_sign_from_exaws) do
         # Build auth from ExAWS and pass to https://hexdocs.pm/req/Req.Steps.html#put_aws_sigv4/1
-        config =
-          Map.take(ExAws.Config.new(:es), [
-            :region,
-            :access_key_id,
-            :secret_access_key,
-            :security_token
-          ])
-
-        aws_sigv4 = [
-          service: "es",
-          region: config[:region],
-          access_key_id: config[:access_key_id],
-          secret_access_key: config[:secret_access_key]
-        ]
+        # because Req doesn't support assuming STS roles directly and only hardcoded credentials.
+        service = :es
+        keys = [:region, :access_key_id, :secret_access_key, :security_token]
 
         aws_sigv4 =
-          if config[:security_token],
-            do: aws_sigv4 ++ [token: config[:security_token]],
-            else: aws_sigv4
+          service
+          |> ExAws.Config.new()
+          |> Map.take(keys)
+          |> Map.put(:service, service)
+          |> Map.new(fn
+            {:security_token, security_token} -> {:token, security_token}
+            other -> other
+          end)
+          |> Map.to_list()
 
         [
           aws_sigv4: aws_sigv4
