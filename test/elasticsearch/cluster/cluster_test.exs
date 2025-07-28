@@ -104,7 +104,7 @@ defmodule Elasticsearch.ClusterTest do
         Elasticsearch.get(Cluster, "/_cat/health?format=json", adapter: adapter)
     end
 
-    test "puts AWS signature headers" do
+    test "puts AWS signature headers when AWS credentials are provided" do
       config =
         Map.put(valid_config(), :default_options,
           aws_sigv4: [
@@ -114,6 +114,26 @@ defmodule Elasticsearch.ClusterTest do
             secret_access_key: "aws_secret_access_key"
           ]
         )
+
+      assert {:ok, _pid} = Cluster.start_link(config)
+
+      plug = fn conn ->
+        assert ["AWS4-HMAC-SHA256" <> _ | _] = Plug.Conn.get_req_header(conn, "authorization")
+        assert [<<_::binary-size(64)>>] = Plug.Conn.get_req_header(conn, "x-amz-content-sha256")
+        Plug.Conn.send_resp(conn, 200, "ok")
+      end
+
+      {:ok, _resp} = Elasticsearch.get(Cluster, "/_cat/health?format=json", plug: plug)
+    end
+
+    test "puts AWS signature headers when using ExAWS credentials" do
+      Application.put_env(:ex_aws, :access_key_id, "test_key_id")
+      Application.put_env(:ex_aws, :secret_access_key, "test_access_key")
+
+      config =
+        valid_config()
+        |> Map.drop([:username, :password])
+        |> Map.put(:default_options, aws_sign_from_exaws: true)
 
       assert {:ok, _pid} = Cluster.start_link(config)
 
