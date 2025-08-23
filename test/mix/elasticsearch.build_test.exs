@@ -1,5 +1,5 @@
 defmodule Mix.Tasks.Elasticsearch.BuildTest do
-  use Elasticsearch.DataCase, async: false
+  use Elasticsearch.DataCase, async: true
 
   import Mix.Task, only: [rerun: 2]
   import ExUnit.CaptureLog
@@ -219,7 +219,7 @@ defmodule Mix.Tasks.Elasticsearch.BuildTest do
     test "only keeps two index versions" do
       for _ <- 1..3 do
         rerun("elasticsearch.build", ["posts"] ++ @cluster_opts)
-        :timer.sleep(2000)
+        :timer.sleep(1500)
       end
 
       {:ok, indexes} = Index.starting_with(TestCluster, "posts")

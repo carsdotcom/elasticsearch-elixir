@@ -1,8 +1,9 @@
 defmodule Elasticsearch.IndexTest do
-  use Elasticsearch.DataCase, async: false
+  use Elasticsearch.DataCase, async: true
 
   alias Elasticsearch.{
     Index,
+    Namespace,
     Test.Cluster
   }
 
@@ -32,9 +33,14 @@ defmodule Elasticsearch.IndexTest do
   end
 
   setup do
-    for index <- ["posts"] do
-      Elasticsearch.delete(Cluster, "/#{index}*")
-    end
+    Namespace.set_pid_namespace(self())
+    ns = Namespace.get_pid_namespace(self())
+
+    on_exit(fn ->
+      Namespace.set_pid_namespace(self())
+
+      Elasticsearch.delete(Cluster, "/#{ns}*")
+    end)
   end
 
   describe ".clean_starting_with/3" do

@@ -10,6 +10,7 @@ defmodule Elasticsearch.Application do
     children = [
       # Starts a worker by calling: Elasticsearch.Worker.start_link(arg)
       # {Elasticsearch.Worker, arg},
+      {Elasticsearch.Namespace, []}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

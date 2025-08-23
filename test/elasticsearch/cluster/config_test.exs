@@ -1,5 +1,5 @@
 defmodule Elasticsearch.Cluster.ConfigTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Elasticsearch.Cluster.Config
 

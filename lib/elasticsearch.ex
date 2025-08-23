@@ -28,7 +28,8 @@ defmodule Elasticsearch do
   alias Elasticsearch.{
     Document,
     Cluster,
-    Cluster.Config
+    Cluster.Config,
+    Namespace
   }
 
   @type index_name :: String.t()
@@ -60,7 +61,8 @@ defmodule Elasticsearch do
   """
   @spec put_document(Cluster.t(), Document.t(), index_name) :: response
   def put_document(cluster, document, index) do
-    put(cluster, document_url(document, index), Document.encode(document))
+    namespaced_index = Namespace.index_with_namespace(index)
+    put(cluster, document_url(document, namespaced_index), Document.encode(document))
   end
 
   @doc """
@@ -89,7 +91,8 @@ defmodule Elasticsearch do
   """
   @spec post_document(Cluster.t(), Document.t(), index_name) :: response
   def post_document(cluster, document, index) do
-    post(cluster, document_url(document, index), Document.encode(document))
+    namespaced_index = Namespace.index_with_namespace(index)
+    post(cluster, document_url(document, namespaced_index), Document.encode(document))
   end
 
   @doc """
@@ -112,7 +115,8 @@ defmodule Elasticsearch do
   """
   @spec put_document!(Cluster.t(), Document.t(), index_name) :: map | no_return
   def put_document!(cluster, document, index) do
-    put!(cluster, document_url(document, index), Document.encode(document))
+    namespaced_index = Namespace.index_with_namespace(index)
+    put!(cluster, document_url(document, namespaced_index), Document.encode(document))
   end
 
   @doc """
@@ -139,7 +143,8 @@ defmodule Elasticsearch do
   """
   @spec delete_document(Cluster.t(), Document.t(), index_name) :: response
   def delete_document(cluster, document, index) do
-    delete(cluster, document_url(document, index))
+    namespaced_index = Namespace.index_with_namespace(index)
+    delete(cluster, document_url(document, namespaced_index))
   end
 
   @doc """
@@ -163,7 +168,8 @@ defmodule Elasticsearch do
   """
   @spec delete_document!(Cluster.t(), Document.t(), index_name) :: map | no_return
   def delete_document!(cluster, document, index) do
-    delete!(cluster, document_url(document, index))
+    namespaced_index = Namespace.index_with_namespace(index)
+    delete!(cluster, document_url(document, namespaced_index))
   end
 
   defp document_url(document, index) do
